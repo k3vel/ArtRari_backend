@@ -1,4 +1,4 @@
-package com.project.ArtRari;
+package com.project.ArtRari.user;
 
 public enum Role {
     user,

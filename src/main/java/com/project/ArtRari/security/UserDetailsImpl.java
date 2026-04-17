@@ -1,5 +1,7 @@
-package com.project.ArtRari;
+package com.project.ArtRari.security;
 
+import com.project.ArtRari.user.Role;
+import com.project.ArtRari.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.jspecify.annotations.Nullable;

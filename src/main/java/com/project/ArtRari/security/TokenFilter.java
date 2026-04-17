@@ -1,6 +1,5 @@
-package com.project.ArtRari;
+package com.project.ArtRari.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

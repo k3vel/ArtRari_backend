@@ -1,4 +1,4 @@
-package com.project.ArtRari;
+package com.project.ArtRari.auth;
 
 public record SigninRequest(
         String email,

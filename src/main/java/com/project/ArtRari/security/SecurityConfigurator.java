@@ -1,13 +1,11 @@
-package com.project.ArtRari;
+package com.project.ArtRari.security;
 
+import com.project.ArtRari.user.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -52,6 +50,7 @@ public class SecurityConfigurator {
                         .requestMatchers("/secured/curator/**").hasRole("curator")
                         .requestMatchers("/secured/admin/**").hasRole("admin")
                         .requestMatchers("/secured/**").fullyAuthenticated()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().permitAll())
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

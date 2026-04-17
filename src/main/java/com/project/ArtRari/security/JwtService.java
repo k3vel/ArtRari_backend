@@ -1,4 +1,4 @@
-package com.project.ArtRari;
+package com.project.ArtRari.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

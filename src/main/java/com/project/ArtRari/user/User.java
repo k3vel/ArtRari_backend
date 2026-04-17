@@ -1,4 +1,4 @@
-package com.project.ArtRari;
+package com.project.ArtRari.user;
 
 import jakarta.persistence.*;
 import lombok.Data;
