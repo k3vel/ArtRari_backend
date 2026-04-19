@@ -15,7 +15,7 @@ public class JwtService{
     @Value("${jwt.secret}") //todo поменять структуру константы в апл проп?
     private String secret;
     @Value("${jwt.expirationMs}")
-    private int expirationMs;
+    private int expirationMs; //todo продлевать срок токена при активности на сайте
 
     private Key getSecret() {
         return Keys.hmacShaKeyFor(secret.getBytes());

@@ -1,6 +1,7 @@
 package com.project.ArtRari.artwork;
 
 import com.project.ArtRari.exhibition.Exhibition;
+import com.project.ArtRari.artwork.tag.Tag;
 import com.project.ArtRari.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -9,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -33,6 +35,10 @@ public class Artwork {
     private String description;
 
     private String technique;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "tag")
+    private List<Tag> tags;
 
     @Column(name = "creation_date")
     private Date creationDate;

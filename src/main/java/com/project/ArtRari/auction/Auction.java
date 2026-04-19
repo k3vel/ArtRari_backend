@@ -7,7 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -22,7 +22,7 @@ public class Auction {
     private Exhibition exhibition;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @Column(name = "auction_step")
     private BigDecimal step;
@@ -32,5 +32,5 @@ public class Auction {
     private AuctionStatus status;
 
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private Instant endDate;
 }
