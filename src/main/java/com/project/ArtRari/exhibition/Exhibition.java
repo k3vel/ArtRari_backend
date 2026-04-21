@@ -18,6 +18,9 @@ public class Exhibition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToMany(mappedBy = "exhibition", fetch = FetchType.LAZY)
+    private List<Artwork> artworks;
+
     @JoinColumn(name = "curator_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private User curator;

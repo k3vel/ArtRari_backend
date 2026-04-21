@@ -1,11 +1,14 @@
 package com.project.ArtRari.exhibition;
 
-import com.project.ArtRari.artwork.tag.Tag;
+import com.project.ArtRari.artwork.Artwork;
+import com.project.ArtRari.artwork.ArtworkMapper;
+import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
+import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.tag.TagRepository;
 import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionsPageResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -13,10 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ExhibitionService {
-    private ExhibitionRepository exhibitionRepository;
-    private TagRepository tagRepository;
+    private final ExhibitionRepository exhibitionRepository;
+    private final TagRepository tagRepository;
+    private final ArtworkMapper artworkMapper;
 
     private List<ExhibitionPreviewResponse> mapExhibitionsIntoExhibitionPreviewResponse(List<Exhibition> exhibitions) {
         return exhibitions.stream()
@@ -29,13 +33,15 @@ public class ExhibitionService {
     }
 
     private ExhibitionResponse mapExhibitionIntoExhibitionResponse(Exhibition exhibition) {
+        List<Artwork> artworks = exhibition.getArtworks();
+        List<ArtworkPreviewResponse> safeArtworks = artworks.stream().map(a -> artworkMapper.toArtworkPreviewResponse(a)).toList();
         return new ExhibitionResponse(
                 exhibition.getId(),
                 exhibition.getTitle(),
+                safeArtworks,
                 exhibition.getDescription(),
                 exhibition.getBackgroundUrl(),
-                exhibition.getStartDate(),
-                exhibition.getStatus()
+                exhibition.getStartDate()
         );
     }
 
@@ -45,7 +51,9 @@ public class ExhibitionService {
     }
 
     public ExhibitionResponse getById(Long id) {
-        Exhibition exhibition = exhibitionRepository.findByIdAndStatus(id, ExhibitionStatus.running).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Exhibition exhibition = exhibitionRepository.findByIdAndStatus(id, ExhibitionStatus.running).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
         return mapExhibitionIntoExhibitionResponse(exhibition);
     }
 

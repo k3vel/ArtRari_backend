@@ -37,7 +37,11 @@ public class Artwork {
     private String technique;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "tag")
+    @JoinTable(
+            name = "tag_work", // таблица связи много-к-многим
+            joinColumns = @JoinColumn(name = "work_id"), // Колонка, которая смотрит на текущий класс (Work) в таблице связи
+            inverseJoinColumns = @JoinColumn(name = "tag_id") // Колонка, которая смотрит на другой класс (Tag) в таблице связи
+    )
     private List<Tag> tags;
 
     @Column(name = "creation_date")

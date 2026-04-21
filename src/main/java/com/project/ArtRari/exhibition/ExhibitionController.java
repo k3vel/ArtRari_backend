@@ -1,19 +1,17 @@
 package com.project.ArtRari.exhibition;
 
-import com.project.ArtRari.artwork.tag.Tag;
-import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionsPageResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/exhibitions")
 public class ExhibitionController {
-    private ExhibitionService exhibitionService;
+    private final ExhibitionService exhibitionService;
 
     @GetMapping
     public ExhibitionsPageResponse getAll(

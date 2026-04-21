@@ -8,9 +8,11 @@ public record AuctionPreviewResponse(
         Long id,
         String title,
         String theme,
-        String description,
+        //String description,
         String thumbnailUrl,
-        AuctionStatus status,
+        //AuctionStatus status, //todo list of tags
         Instant startDate,
         Instant endDate
 ) {}
+
+//todo auctionspageresponse

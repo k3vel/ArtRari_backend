@@ -1,6 +1,6 @@
 package com.project.ArtRari.exhibition;
 
-import com.project.ArtRari.artwork.tag.Tag;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     List<Exhibition> findTop6ByStatusOrderByIdDesc(ExhibitionStatus status);
 
+    @EntityGraph(attributePaths = {"artworks"})
     Optional<Exhibition> findByIdAndStatus(long id, ExhibitionStatus status);
 
     List<Exhibition> findByStatus(ExhibitionStatus status);
