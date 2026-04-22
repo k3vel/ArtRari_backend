@@ -2,6 +2,7 @@ package com.project.ArtRari.auction;
 
 import com.project.ArtRari.auction.dto.AuctionPreviewResponse;
 import com.project.ArtRari.auction.dto.AuctionResponse;
+import com.project.ArtRari.auction.dto.AuctionsPageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +18,8 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @GetMapping
-    public List<AuctionPreviewResponse> getAuctions() {
-        return auctionService.getAuctionsPreview();
+    public AuctionsPageResponse getAuctions() {
+        return auctionService.getAuctions();
     }
 
     @GetMapping("/{id}")

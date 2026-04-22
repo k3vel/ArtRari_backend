@@ -11,6 +11,6 @@ public record AuctionResponse(
         Long id,
         List<LotPreviewResponse> lotPreviews,
         Instant startDate,
-        Instant endDate
-        //String status
+        Instant endDate,
+        String status
 ) {}

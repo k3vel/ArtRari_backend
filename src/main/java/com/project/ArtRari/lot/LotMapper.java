@@ -21,7 +21,8 @@ public class LotMapper {
                 lot.getId(),
                 safeArtwork,
                 lot.getCurrentPrice(),
-                lot.getEndDate()
+                lot.getEndDate(),
+                lot.getStatus().name()
         );
     }
 

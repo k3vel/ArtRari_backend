@@ -8,6 +8,7 @@ import com.project.ArtRari.artwork.tag.TagRepository;
 import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionsPageResponse;
+import com.project.ArtRari.user.dto.UserPreviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,9 @@ public class ExhibitionService {
                 safeArtworks,
                 exhibition.getDescription(),
                 exhibition.getBackgroundUrl(),
-                exhibition.getStartDate()
+                new UserPreviewResponse(exhibition.getCurator().getId(), exhibition.getCurator().getFullName()),
+                exhibition.getStartDate(),
+                exhibition.getStatus().name()
         );
     }
 

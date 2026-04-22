@@ -9,5 +9,6 @@ public record LotResponse(
    Long id,
    ArtworkResponse artwork,
    BigDecimal currentPrice,
-   Instant endDate
-) {}
+   Instant endDate,
+   String status
+) {} //todo список ставок

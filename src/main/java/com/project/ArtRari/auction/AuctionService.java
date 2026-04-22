@@ -2,6 +2,7 @@ package com.project.ArtRari.auction;
 
 import com.project.ArtRari.auction.dto.AuctionPreviewResponse;
 import com.project.ArtRari.auction.dto.AuctionResponse;
+import com.project.ArtRari.auction.dto.AuctionsPageResponse;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotMapper;
 import com.project.ArtRari.lot.dto.LotPreviewResponse;
@@ -40,9 +41,9 @@ public class AuctionService {
         return mapAuctionsIntoAuctionPreviewResponse(auctions);
     }
 
-    public List<AuctionPreviewResponse> getAuctionsPreview() {
+    public AuctionsPageResponse getAuctions() {
         List<Auction> auctions = auctionRepository.findByStatusOrStatus(AuctionStatus.scheduled, AuctionStatus.active);
-        return mapAuctionsIntoAuctionPreviewResponse(auctions);
+        return new AuctionsPageResponse(mapAuctionsIntoAuctionPreviewResponse(auctions));
     }
 
     public AuctionResponse getById(Long id) {
@@ -55,7 +56,8 @@ public class AuctionService {
                 auction.getId(),
                 safeLots,
                 auction.getStartDate(),
-                auction.getEndDate()
+                auction.getEndDate(),
+                auction.getStatus().name()
         );
     }
 }

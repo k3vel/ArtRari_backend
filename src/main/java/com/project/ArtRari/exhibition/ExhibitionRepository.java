@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     List<Exhibition> findTop6ByStatusOrderByIdDesc(ExhibitionStatus status);
 
-    @EntityGraph(attributePaths = {"artworks"})
+    @EntityGraph(attributePaths = {"artworks", "curator"})
     Optional<Exhibition> findByIdAndStatus(long id, ExhibitionStatus status);
 
     List<Exhibition> findByStatus(ExhibitionStatus status);
