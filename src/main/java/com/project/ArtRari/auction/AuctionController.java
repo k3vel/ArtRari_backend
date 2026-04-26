@@ -1,15 +1,10 @@
 package com.project.ArtRari.auction;
 
-import com.project.ArtRari.auction.dto.AuctionPreviewResponse;
-import com.project.ArtRari.auction.dto.AuctionResponse;
-import com.project.ArtRari.auction.dto.AuctionsPageResponse;
+import com.project.ArtRari.auction.dto.*;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auctions")
@@ -26,4 +21,23 @@ public class AuctionController {
     public AuctionResponse getAuction(@PathVariable Long id) {
         return auctionService.getById(id);
     }
+
+    @PostMapping
+    @PreAuthorize("hasRole('curator')")
+    public AuctionResponse createAuction(@RequestBody AuctionCreateRequest request) {
+        return auctionService.createAuction(request);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('curator')")
+    public AuctionResponse updateAuction(@PathVariable Long id, @RequestBody AuctionUpdateRequest request) {
+        return auctionService.updateAuction(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('curator')")
+    public void deleteAuction(@PathVariable Long id) {
+        auctionService.deleteAuction(id);
+    }
+
 }

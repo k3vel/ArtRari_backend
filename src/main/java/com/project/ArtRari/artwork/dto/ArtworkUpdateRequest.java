@@ -1,18 +1,17 @@
 package com.project.ArtRari.artwork.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 public record ArtworkUpdateRequest(
-        //Long userId,
-        //Long artworkId,
         String newTitle,
         String newAuthor,
         String newDescription,
         String newTechnique,
         List<Long> newTags,
-        Date newCreationDate,
+        LocalDate newCreationDate,
         String newPhotoUrl,
         BigDecimal newStartPrice
 ) {}

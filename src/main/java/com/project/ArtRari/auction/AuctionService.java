@@ -1,19 +1,28 @@
 package com.project.ArtRari.auction;
 
-import com.project.ArtRari.auction.dto.AuctionPreviewResponse;
-import com.project.ArtRari.auction.dto.AuctionResponse;
-import com.project.ArtRari.auction.dto.AuctionsPageResponse;
+import com.project.ArtRari.artwork.Artwork;
+import com.project.ArtRari.auction.dto.*;
+import com.project.ArtRari.exhibition.Exhibition;
+import com.project.ArtRari.exhibition.ExhibitionRepository;
+import com.project.ArtRari.exhibition.ExhibitionService;
+import com.project.ArtRari.exhibition.ExhibitionStatus;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotMapper;
+import com.project.ArtRari.lot.LotRepository;
+import com.project.ArtRari.lot.LotStatus;
 import com.project.ArtRari.lot.dto.LotPreviewResponse;
 import com.project.ArtRari.lot.dto.LotResponse;
+import com.project.ArtRari.security.UserDetailsImpl;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +30,8 @@ import java.util.List;
 public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final LotMapper lotMapper;
+    private final ExhibitionRepository exhibitionRepository;
+    private final LotRepository lotRepository;
 
     private List<AuctionPreviewResponse> mapAuctionsIntoAuctionPreviewResponse(List<Auction> auctions) {
         return auctions.stream()
@@ -34,6 +45,18 @@ public class AuctionService {
                         a.getStartDate(),
                         a.getEndDate()))
                 .toList();
+    }
+
+    private AuctionResponse mapAuctionIntoAuctionResponse(Auction auction) {
+        List<Lot> lots = auction.getLots();
+        List<LotPreviewResponse> safeLots = lots.stream().map(l -> lotMapper.toLotPreviewResponse(l)).toList();
+        return new AuctionResponse(
+                auction.getId(),
+                safeLots,
+                auction.getStartDate(),
+                auction.getEndDate(),
+                auction.getStatus().name()
+        );
     }
 
     public List<AuctionPreviewResponse> getLatestAuctionsPreview() {
@@ -50,14 +73,75 @@ public class AuctionService {
         Auction auction = auctionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        List<Lot> lots = auction.getLots();
-        List<LotPreviewResponse> safeLots = lots.stream().map(l -> lotMapper.toLotPreviewResponse(l)).toList();
-        return new AuctionResponse(
-                auction.getId(),
-                safeLots,
-                auction.getStartDate(),
-                auction.getEndDate(),
-                auction.getStatus().name()
-        );
+        return mapAuctionIntoAuctionResponse(auction);
     }
+
+    @Transactional
+    public AuctionResponse createAuction(AuctionCreateRequest request) {
+        Exhibition exhibition = exhibitionRepository.findByIdAndStatus(request.exhibitionId(), ExhibitionStatus.running)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (auctionRepository.existsByExhibitionId(exhibition.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Auction for this exhibition already exists");
+        }
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!udi.getId().equals(exhibition.getCurator().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        Auction auction = new Auction();
+        auction.setExhibition(exhibition);
+        auction.setStartDate(request.startDate());
+        auction.setEndDate(request.endDate());
+        auction.setStep(request.step());
+        auction.setStatus(AuctionStatus.scheduled);
+
+        List<Lot> lots = new ArrayList<>();
+        List<Artwork> artworks = exhibition.getArtworks();
+        for (Artwork artwork : artworks) {
+            Lot lot = new Lot();
+            lot.setArtwork(artwork);
+            lot.setCurrentPrice(artwork.getStartPrice());
+            lot.setEndDate(request.endDate());
+            lot.setStatus(LotStatus.available);
+            lots.add(lot);
+        }
+
+        auction.setLots(lots);
+        auctionRepository.save(auction);
+
+        return mapAuctionIntoAuctionResponse(auction);
+    }
+
+    @Transactional
+    public AuctionResponse updateAuction(Long id, AuctionUpdateRequest request) {
+        Auction auction = auctionRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        Exhibition exhibition = auction.getExhibition();
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!udi.getId().equals(exhibition.getCurator().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+
+        auction.setStartDate(request.startDate());
+        auction.setEndDate(request.endDate());
+        auction.setStep(request.step());
+        auctionRepository.save(auction);
+        return mapAuctionIntoAuctionResponse(auction);
+    }
+
+    @Transactional
+    public void deleteAuction(Long id) {
+        Auction auction = auctionRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        Exhibition exhibition = auction.getExhibition();
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!udi.getId().equals(exhibition.getCurator().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        auctionRepository.delete(auction);
+    }
+
 }

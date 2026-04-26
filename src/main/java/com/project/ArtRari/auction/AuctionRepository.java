@@ -18,4 +18,6 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     @Override
     @EntityGraph(attributePaths = {"lots", "lots.artwork", "lots.artwork.user", "exhibition"})
     Optional<Auction> findById(Long id);
+
+    boolean existsByExhibitionId(Long exhibitionId);
 }

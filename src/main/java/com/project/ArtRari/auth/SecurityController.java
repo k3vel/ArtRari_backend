@@ -54,7 +54,7 @@ public class SecurityController {
         user.setPhone(signupRequest.phone());
         user.setEmail(signupRequest.email());
         user.setPassword(passwordEncoder.encode(signupRequest.password()));
-        user.setRole(Role.user);
+        user.setRole(Role.curator);
         userRepository.save(user);
         return ResponseEntity.ok("Signup successful");
     }

@@ -3,6 +3,7 @@ package com.project.ArtRari.artwork.dto;
 import com.project.ArtRari.user.dto.UserPreviewResponse;
 import com.project.ArtRari.user.dto.UserResponse;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public record ArtworkResponse(
         String description,
         String technique,
         List<String> tags,
-        Date creationDate,
+        LocalDate creationDate,
         String photoUrl,
         String status
 ) {}

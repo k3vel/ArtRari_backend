@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,8 @@ public class ArtworkService {
 
     @Transactional
     public ArtworkResponse addArtwork(ArtworkCreateRequest artworkCreateRequest) {
-        User user = userRepository.getReferenceById(artworkCreateRequest.userId());
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(udi.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         List<Tag> tags = artworkCreateRequest.tags().stream().map(t -> tagRepository.getReferenceById(t)).toList();
         Artwork artwork = new Artwork();
         artwork.setUser(user);
@@ -46,6 +48,7 @@ public class ArtworkService {
         artwork.setCreationDate(artworkCreateRequest.creationDate());
         artwork.setPhotoUrl(artworkCreateRequest.photoUrl());
         artwork.setStartPrice(artworkCreateRequest.startPrice());
+        artwork.setStatus(WorkStatus.available);
         Artwork savedArtwork = artworkRepository.save(artwork);
         return artworkMapper.toArtworkResponse(savedArtwork);
     }
@@ -53,7 +56,7 @@ public class ArtworkService {
     @Transactional
     public ArtworkResponse updateArtwork(Long id, ArtworkUpdateRequest artworkUpdateRequest) {
         Artwork artwork = artworkRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //todo хорошая практика выносить в параметр котнроллера
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(artwork.getUser().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -61,7 +64,9 @@ public class ArtworkService {
         artwork.setAuthor(artworkUpdateRequest.newAuthor());
         artwork.setDescription(artworkUpdateRequest.newDescription());
         artwork.setTechnique(artworkUpdateRequest.newTechnique());
-        artwork.setTags(artworkUpdateRequest.newTags().stream().map(t -> tagRepository.getReferenceById(t)).toList());
+        artwork.setTags(artworkUpdateRequest.newTags().stream().map(
+                t -> tagRepository.getReferenceById(t)).collect(Collectors.toList())
+        );
         artwork.setCreationDate(artworkUpdateRequest.newCreationDate());
         artwork.setPhotoUrl(artworkUpdateRequest.newPhotoUrl());
         artwork.setStartPrice(artworkUpdateRequest.newStartPrice());
