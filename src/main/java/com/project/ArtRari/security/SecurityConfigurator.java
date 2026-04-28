@@ -1,6 +1,5 @@
 package com.project.ArtRari.security;
 
-import com.project.ArtRari.user.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

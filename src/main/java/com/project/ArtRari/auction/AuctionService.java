@@ -39,9 +39,7 @@ public class AuctionService {
                         a.getId(),
                         a.getExhibition().getTitle(),
                         a.getExhibition().getTheme(),
-                        //a.getExhibition().getDescription(),
                         a.getExhibition().getThumbnailUrl(),
-                        //a.getStatus(),
                         a.getStartDate(),
                         a.getEndDate()))
                 .toList();

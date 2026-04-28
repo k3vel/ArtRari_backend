@@ -14,15 +14,17 @@ import org.springframework.stereotype.Component;
 public class LotMapper {
     private final ArtworkMapper artworkMapper;
 
-    public LotResponse toLotResponse(Lot lot) {
+    public LotResponse toLotResponse(Lot lot, Long userId) {
         Artwork artwork = lot.getArtwork();
+        boolean isMyLot = artwork.getUser().getId().equals(userId);
         ArtworkResponse safeArtwork = artworkMapper.toArtworkResponse(artwork);
         return new LotResponse(
                 lot.getId(),
                 safeArtwork,
                 lot.getCurrentPrice(),
                 lot.getEndDate(),
-                lot.getStatus().name()
+                lot.getStatus().name(),
+                isMyLot
         );
     }
 

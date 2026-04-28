@@ -1,11 +1,14 @@
 package com.project.ArtRari.artwork;
 
 import com.project.ArtRari.artwork.dto.ArtworkCreateRequest;
+import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/artworks")
@@ -34,5 +37,11 @@ public class ArtworkController {
     @PreAuthorize("hasRole('user')")
     public void deleteArtwork(@PathVariable Long id) {
         artworkService.deleteArtwork(id);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('curator', 'admin')")
+    public List<ArtworkPreviewResponse> getAll() {
+        return artworkService.getAvailableArtworks();
     }
 }

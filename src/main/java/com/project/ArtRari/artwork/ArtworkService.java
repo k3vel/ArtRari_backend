@@ -1,6 +1,7 @@
 package com.project.ArtRari.artwork;
 
 import com.project.ArtRari.artwork.dto.ArtworkCreateRequest;
+import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
 import com.project.ArtRari.artwork.tag.Tag;
@@ -31,6 +32,11 @@ public class ArtworkService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         return artworkMapper.toArtworkResponse(artwork);
+    }
+
+    public List<ArtworkPreviewResponse> getAvailableArtworks() {
+        List<Artwork> artworks = artworkRepository.findByStatus(WorkStatus.available);
+        return artworks.stream().map(a -> artworkMapper.toArtworkPreviewResponse(a)).collect(Collectors.toList());
     }
 
     @Transactional

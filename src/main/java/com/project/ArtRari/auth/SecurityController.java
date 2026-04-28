@@ -46,9 +46,12 @@ public class SecurityController {
 
     @PostMapping("/signup")
     ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByEmail(signupRequest.email())) { //todo exists phone
+        if (userRepository.existsByEmail(signupRequest.email()))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
-        }
+        if (userRepository.existsByPhone(signupRequest.phone()))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Phone already exists");
+        if (userRepository.existsByFullName(signupRequest.fullName()))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username already exists");
         User user = new User();
         user.setFullName(signupRequest.fullName());
         user.setPhone(signupRequest.phone());

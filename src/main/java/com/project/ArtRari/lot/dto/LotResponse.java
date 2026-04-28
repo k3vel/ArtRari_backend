@@ -10,5 +10,6 @@ public record LotResponse(
    ArtworkResponse artwork,
    BigDecimal currentPrice,
    Instant endDate,
-   String status
-) {} //todo список ставок
+   String status,
+   boolean isMyLot
+) {}
