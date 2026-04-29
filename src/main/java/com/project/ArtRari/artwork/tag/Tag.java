@@ -1,11 +1,12 @@
 package com.project.ArtRari.artwork.tag;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Table(name = "tag")
-@Data
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

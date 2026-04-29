@@ -40,4 +40,6 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
                             OR LOWER(w.technique) LIKE LOWER(CONCAT('%',:search,'%')))
             AND e.status='running'::exhibition_status""", nativeQuery = true)
     List<Exhibition> findBySearchOnly(@Param("search") String search);
+
+
 }

@@ -142,4 +142,22 @@ public class AuctionService {
         auctionRepository.delete(auction);
     }
 
+    @Transactional
+    public void openAuctions() {
+        List<Auction> auctions = auctionRepository.findAuctionsToOpen(Instant.now());
+        for (Auction auction : auctions) {
+            auction.setStatus(AuctionStatus.active);
+            Exhibition e = auction.getExhibition();
+            e.setStatus(ExhibitionStatus.converted_in_auction);
+        }
+    }
+
+    @Transactional
+    public void closeAuctions() {
+        List<Auction> auctions = auctionRepository.findAuctionsToClose(Instant.now());
+        for (Auction auction : auctions) {
+            auction.setStatus(AuctionStatus.finished);
+        }
+    }
+
 }

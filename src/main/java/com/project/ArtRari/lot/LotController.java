@@ -4,8 +4,6 @@ import com.project.ArtRari.lot.dto.LotResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-
 @RestController
 @RequestMapping("/lots")
 @RequiredArgsConstructor

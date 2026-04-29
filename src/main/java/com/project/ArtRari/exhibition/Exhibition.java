@@ -1,22 +1,20 @@
 package com.project.ArtRari.exhibition;
 
 import com.project.ArtRari.artwork.Artwork;
-import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.user.User;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Entity
 @Table(name = "exhibition")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Exhibition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

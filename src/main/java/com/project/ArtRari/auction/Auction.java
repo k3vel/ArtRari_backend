@@ -3,7 +3,7 @@ package com.project.ArtRari.auction;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.lot.Lot;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -12,9 +12,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Entity
 @Table(name = "auction")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Auction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

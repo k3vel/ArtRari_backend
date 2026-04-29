@@ -3,14 +3,15 @@ package com.project.ArtRari.purchase;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.user.User;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
 @Table(name = "purchase_history")
-@Data
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class PurchaseHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

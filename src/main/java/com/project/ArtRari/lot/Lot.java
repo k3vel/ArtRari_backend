@@ -2,24 +2,27 @@ package com.project.ArtRari.lot;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.auction.Auction;
+import com.project.ArtRari.bid.Bid;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "lot")
-@Data
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Lot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JoinColumn(name = "work_id")
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Artwork artwork;
 
     @JoinColumn(name = "auction_id")
@@ -31,6 +34,9 @@ public class Lot {
 
     @Column(name = "end_date")
     private Instant endDate;
+
+    @OneToMany(mappedBy = "lot", fetch = FetchType.LAZY)
+    private List<Bid> bids;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

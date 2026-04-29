@@ -3,14 +3,15 @@ package com.project.ArtRari.bid;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.user.User;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
 @Table(name = "bid")
-@Data
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Bid {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
