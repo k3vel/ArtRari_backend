@@ -16,7 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private Long id;
-    private String fullName;
+    private String firstName;
+    private String lastName;
     private String phone;
     private String email;
     private String password;
@@ -27,7 +28,8 @@ public class UserDetailsImpl implements UserDetails {
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(
                 user.getId(),
-                user.getFullName(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getPhone(),
                 user.getEmail(),
                 user.getPassword(),

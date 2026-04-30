@@ -5,7 +5,6 @@ import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.tag.Tag;
 import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.dto.UserPreviewResponse;
-import com.project.ArtRari.user.dto.UserResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,7 +15,8 @@ public class ArtworkMapper {
         User user = artwork.getUser();
         UserPreviewResponse safeUser = new UserPreviewResponse(
                 user.getId(),
-                user.getFullName()
+                user.getFirstName(),
+                user.getLastName()
         );
         List<Tag> tags = artwork.getTags();
         List<String> safeTags = tags.stream().map(t -> t.getName()).toList();

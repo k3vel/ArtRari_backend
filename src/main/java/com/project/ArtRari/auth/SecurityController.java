@@ -1,10 +1,13 @@
 package com.project.ArtRari.auth;
 
+import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.security.JwtService;
+import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import com.project.ArtRari.user.UserService;
+import com.project.ArtRari.user.dto.UserResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +30,7 @@ public class SecurityController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; //todo remove
 
     @PostMapping("/signin")
     ResponseEntity<?> signin(@RequestBody SigninRequest signinRequest) {
@@ -37,27 +40,38 @@ public class SecurityController {
                     new UsernamePasswordAuthenticationToken(signinRequest.email(), signinRequest.password())
             );
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            throw new ArtrariException(HttpStatus.UNAUTHORIZED, "Невірна пошта або пароль");
         }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateToken(authentication);
-        return ResponseEntity.ok(jwt);
+        UserDetailsImpl udi = (UserDetailsImpl) authentication.getPrincipal();
+        UserResponse user = new UserResponse(
+                udi.getId(),
+                udi.getFirstName(),
+                udi.getLastName(),
+                udi.getPhone(),
+                udi.getEmail(),
+                udi.getRole().name()
+        );
+        AuthResponse authResponse = new AuthResponse(jwt, user);
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/signup")
     ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.email()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ця пошта вже зайнята");
         if (userRepository.existsByPhone(signupRequest.phone()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Phone already exists");
-        if (userRepository.existsByFullName(signupRequest.fullName()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username already exists");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей номер телефона вже зайнято");
+        if (userRepository.existsByFirstNameAndLastName(signupRequest.firstName(), signupRequest.lastName()))
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Користувач з таким ім'ям вже існує");
         User user = new User();
-        user.setFullName(signupRequest.fullName());
+        user.setFirstName(signupRequest.firstName());
+        user.setLastName(signupRequest.lastName());
         user.setPhone(signupRequest.phone());
         user.setEmail(signupRequest.email());
         user.setPassword(passwordEncoder.encode(signupRequest.password()));
-        user.setRole(Role.curator);
+        user.setRole(Role.user);
         userRepository.save(user);
         return ResponseEntity.ok("Signup successful");
     }

@@ -1,7 +1,6 @@
 package com.project.ArtRari.artwork.dto;
 
 import com.project.ArtRari.user.dto.UserPreviewResponse;
-import com.project.ArtRari.user.dto.UserResponse;
 
 import java.time.LocalDate;
 import java.util.Date;

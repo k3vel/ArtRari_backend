@@ -1,7 +1,8 @@
 package com.project.ArtRari.auth;
 
 public record SignupRequest(
-        String fullName,
+        String firstName,
+        String lastName,
         String phone,
         String email,
         String password

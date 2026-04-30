@@ -1,3 +1,3 @@
-INSERT INTO USERS(full_name,phone,email,password_hash,role,is_banned)
-VALUES ('abc', '123', 'cba','$2a$10$zhppCP786vJE.KMH.TfX5.SxD3U/RALG9fgZJnA2drag8gpg1ZRZ2', 'user',false),
-       ('curator','666','curator','$2a$10$8bLiVFKdkVzbedcUagLqduUJUWyBkRXQGaTMMMgBcZU0sqYNrKg2a','curator',false)
+INSERT INTO USERS(first_name,last_name,phone,email,password_hash,role,is_banned)
+VALUES ('ordinary', 'user', '123', 'abc','$2a$10$cRLf/MtK1Js4tDR7DQiPpux1bDRFdTpBNe7E49jPkrxGs8Vh3F.8S', 'user',false),
+       ('curator','curatorovich','456','curator','$2a$10$S8WqOL5yK0UaBPXlE0NyUONzFu5omhb7mB5/XPTtafygG7AX9mt2q','curator',false)

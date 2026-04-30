@@ -9,6 +9,5 @@ public record ExhibitionCreateRequest(
         String theme,
         String description,
         String backgroundUrl,
-        Instant startDate,
         String thumbnailUrl
 ) {}

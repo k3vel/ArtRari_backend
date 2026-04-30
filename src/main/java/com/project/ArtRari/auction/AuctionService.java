@@ -2,6 +2,7 @@ package com.project.ArtRari.auction;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.auction.dto.*;
+import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
 import com.project.ArtRari.exhibition.ExhibitionService;
@@ -79,7 +80,7 @@ public class AuctionService {
         Exhibition exhibition = exhibitionRepository.findByIdAndStatus(request.exhibitionId(), ExhibitionStatus.running)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (auctionRepository.existsByExhibitionId(exhibition.getId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Auction for this exhibition already exists");
+            throw new ArtrariException(HttpStatus.CONFLICT, "Auction for this exhibition already exists");
         }
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
@@ -120,8 +121,10 @@ public class AuctionService {
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-
-
+        if (auction.getStatus() == AuctionStatus.active || auction.getStatus() == AuctionStatus.finished) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ви не можете редагувати аукціон, який проходить або завершений");
+        }
         auction.setStartDate(request.startDate());
         auction.setEndDate(request.endDate());
         auction.setStep(request.step());
@@ -139,6 +142,10 @@ public class AuctionService {
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
+        if (auction.getStatus() == AuctionStatus.active || auction.getStatus() == AuctionStatus.finished) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ви не можете видаляти аукціон, який проходить або завершений");
+        }
         auctionRepository.delete(auction);
     }
 
@@ -148,7 +155,7 @@ public class AuctionService {
         for (Auction auction : auctions) {
             auction.setStatus(AuctionStatus.active);
             Exhibition e = auction.getExhibition();
-            e.setStatus(ExhibitionStatus.converted_in_auction);
+            e.setStatus(ExhibitionStatus.converted_into_auction);
         }
     }
 

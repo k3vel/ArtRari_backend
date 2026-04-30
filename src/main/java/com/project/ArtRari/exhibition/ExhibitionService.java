@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -48,7 +49,10 @@ public class ExhibitionService {
                 safeArtworks,
                 exhibition.getDescription(),
                 exhibition.getBackgroundUrl(),
-                new UserPreviewResponse(exhibition.getCurator().getId(), exhibition.getCurator().getFullName()),
+                new UserPreviewResponse(
+                        exhibition.getCurator().getId(),
+                        exhibition.getCurator().getFirstName(),
+                        exhibition.getCurator().getLastName()),
                 exhibition.getStartDate(),
                 exhibition.getStatus().name()
         );
@@ -92,8 +96,8 @@ public class ExhibitionService {
         exhibition.setTheme(exhibitionCreateRequest.theme());
         exhibition.setDescription(exhibitionCreateRequest.description());
         exhibition.setBackgroundUrl(exhibitionCreateRequest.backgroundUrl());
-        exhibition.setStartDate(exhibitionCreateRequest.startDate());
-        exhibition.setStatus(ExhibitionStatus.waiting);
+        exhibition.setStartDate(Instant.now());
+        exhibition.setStatus(ExhibitionStatus.running);
         exhibition.setThumbnailUrl(exhibitionCreateRequest.thumbnailUrl());
         List<Artwork> artworks = artworkRepository.findAllById(exhibitionCreateRequest.artworkIds());
         try {
@@ -113,6 +117,10 @@ public class ExhibitionService {
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        if (exhibition.getStatus() == ExhibitionStatus.converted_into_auction) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ви не можете редагувати виставку, яку перетворено на аукціон");
         }
         exhibition.setTitle(exhibitionUpdateRequest.title());
         exhibition.setTheme(exhibitionUpdateRequest.theme());
@@ -137,6 +145,10 @@ public class ExhibitionService {
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        if (exhibition.getStatus() == ExhibitionStatus.converted_into_auction) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ви не можете видаляти виставку, яку перетворено на аукціон");
         }
         exhibitionRepository.delete(exhibition);
     }

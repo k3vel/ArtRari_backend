@@ -2,13 +2,13 @@
 -- ENUMS
 CREATE TYPE user_role AS ENUM('user', 'curator', 'admin');
 
-CREATE TYPE exhibition_status AS ENUM('waiting', 'running', 'converted_in_auction');
+CREATE TYPE exhibition_status AS ENUM('running', 'converted_into_auction');
 
 CREATE TYPE auction_status AS ENUM('scheduled', 'active', 'finished');
 
 CREATE TYPE work_status AS ENUM('available', 'in_auction', 'sold');
 
-CREATE TYPE lot_status AS ENUM('available', 'sold', 'cancelled');
+CREATE TYPE lot_status AS ENUM('available', 'sold', 'unsold', 'cancelled');
 
 CREATE TYPE purchase_status AS ENUM(
   'pending_payment',
@@ -20,7 +20,8 @@ CREATE TYPE purchase_status AS ENUM(
 -- Tables
 CREATE TABLE users (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  full_name TEXT NOT NULL,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
   phone TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
@@ -36,7 +37,7 @@ CREATE TABLE exhibition (
   description TEXT,
   background_url TEXT,
   start_date TIMESTAMPTZ NOT NULL,
-  status exhibition_status NOT NULL DEFAULT 'waiting',
+  status exhibition_status NOT NULL,
   thumbnail_url TEXT
 );
 

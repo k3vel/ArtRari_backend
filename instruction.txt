@@ -1,0 +1,6 @@
+1. maven clean
+2. maven package
+3. docker build -t k3ve1/artrari-backend:latest .
+4. docker push k3ve1/artrari-backend:latest
+(5.) docker-compose down -v
+6. docker-compose up -d --build

@@ -4,6 +4,8 @@ import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,5 +33,7 @@ public class PurchaseHistory {
     @Column(name = "win_date")
     private Instant winDate;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private PurchaseStatus status;
 }

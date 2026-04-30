@@ -27,7 +27,7 @@ public class Bid {
 
     private BigDecimal amount;
 
-    @Column(name = "created_at") //todo rename placed_at
+    @Column(name = "created_at")
     private Instant createdAt;
 
     @Column(name = "is_win")

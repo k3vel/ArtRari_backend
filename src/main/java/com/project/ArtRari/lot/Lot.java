@@ -35,7 +35,7 @@ public class Lot {
     @Column(name = "end_date")
     private Instant endDate;
 
-    @OneToMany(mappedBy = "lot", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "lot", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Bid> bids;
 
     @Enumerated(EnumType.STRING)

@@ -4,6 +4,9 @@ import com.project.ArtRari.artwork.WorkStatus;
 import com.project.ArtRari.bid.Bid;
 import com.project.ArtRari.bid.BidRepository;
 import com.project.ArtRari.lot.dto.LotResponse;
+import com.project.ArtRari.purchase.PurchaseHistory;
+import com.project.ArtRari.purchase.PurchaseRepository;
+import com.project.ArtRari.purchase.PurchaseStatus;
 import com.project.ArtRari.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class LotService {
     private final LotRepository lotRepository;
     private final LotMapper lotMapper;
     private final BidRepository bidRepository;
+    private final PurchaseRepository purchaseRepository;
 
     @Autowired
     @Lazy
@@ -46,7 +50,7 @@ public class LotService {
             lotService.closeLot(lot.getId());
         }
     }
-//todo ОСОЗНАТЬ ПОЧЕМУ ТАК И ПОВТОРИТЬ НЕСКОЛЬКО РАЗ
+//todo ВЕРНУТЬСЯ СЮДА
     @Transactional
     public void closeLot(Long id) {
         Lot lot = lotRepository.findByIdForUpdate(id).orElseThrow();
@@ -56,7 +60,13 @@ public class LotService {
             winner.setWin(true);
             lot.getArtwork().setStatus(WorkStatus.sold);
             lot.setStatus(LotStatus.sold);
-            //todo логика сохранения в историю покупок
+            PurchaseHistory purchase = new PurchaseHistory();
+            purchase.setUser(winner.getUser());
+            purchase.setLot(lot);
+            purchase.setFinalPrice(winner.getAmount());
+            purchase.setWinDate(Instant.now());
+            purchase.setStatus(PurchaseStatus.pending_payment);
+            purchaseRepository.save(purchase);
         } else {
             lot.getArtwork().setStatus(WorkStatus.available);
             lot.setStatus(LotStatus.unsold);
