@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class ArtworkMapper {
     public ArtworkResponse toArtworkResponse(Artwork artwork) {
-        User user = artwork.getUser();
+        User user = artwork.getOwner();
         UserPreviewResponse safeUser = new UserPreviewResponse(
                 user.getId(),
                 user.getFirstName(),

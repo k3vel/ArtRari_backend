@@ -14,7 +14,7 @@ import java.time.Instant;
 @Table(name = "purchase_history")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class PurchaseHistory {
+public class Purchase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

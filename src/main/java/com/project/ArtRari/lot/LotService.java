@@ -4,7 +4,7 @@ import com.project.ArtRari.artwork.WorkStatus;
 import com.project.ArtRari.bid.Bid;
 import com.project.ArtRari.bid.BidRepository;
 import com.project.ArtRari.lot.dto.LotResponse;
-import com.project.ArtRari.purchase.PurchaseHistory;
+import com.project.ArtRari.purchase.Purchase;
 import com.project.ArtRari.purchase.PurchaseRepository;
 import com.project.ArtRari.purchase.PurchaseStatus;
 import com.project.ArtRari.security.UserDetailsImpl;
@@ -45,7 +45,7 @@ public class LotService {
     }
 
     public void closeLots() {
-        List<Lot> lots = lotRepository.findLotsToClose(Instant.now());
+        List<Lot> lots = lotRepository.findLotsToClose(Instant.now(), LotStatus.available);
         for (Lot lot : lots) {
             lotService.closeLot(lot.getId());
         }
@@ -60,7 +60,7 @@ public class LotService {
             winner.setWin(true);
             lot.getArtwork().setStatus(WorkStatus.sold);
             lot.setStatus(LotStatus.sold);
-            PurchaseHistory purchase = new PurchaseHistory();
+            Purchase purchase = new Purchase();
             purchase.setUser(winner.getUser());
             purchase.setLot(lot);
             purchase.setFinalPrice(winner.getAmount());
@@ -68,7 +68,6 @@ public class LotService {
             purchase.setStatus(PurchaseStatus.pending_payment);
             purchaseRepository.save(purchase);
         } else {
-            lot.getArtwork().setStatus(WorkStatus.available);
             lot.setStatus(LotStatus.unsold);
             lot.getArtwork().setExhibition(null);
         }

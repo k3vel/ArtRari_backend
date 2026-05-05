@@ -6,7 +6,6 @@ import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
 import com.project.ArtRari.artwork.tag.Tag;
 import com.project.ArtRari.artwork.tag.TagRepository;
-import com.project.ArtRari.bid.BidRepository;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
@@ -40,7 +39,7 @@ public class ArtworkService {
     }
 
     public List<ArtworkPreviewResponse> getAvailableArtworks() {
-        List<Artwork> artworks = artworkRepository.findByStatus(WorkStatus.available);
+        List<Artwork> artworks = artworkRepository.findByStatusAndExhibitionIsNull(WorkStatus.available);
         return artworks.stream().map(a -> artworkMapper.toArtworkPreviewResponse(a)).collect(Collectors.toList());
     }
 
@@ -50,7 +49,7 @@ public class ArtworkService {
         User user = userRepository.findById(udi.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         List<Tag> tags = artworkCreateRequest.tags().stream().map(t -> tagRepository.getReferenceById(t)).toList();
         Artwork artwork = new Artwork();
-        artwork.setUser(user);
+        artwork.setOwner(user);
         artwork.setTitle(artworkCreateRequest.title());
         artwork.setAuthor(artworkCreateRequest.author());
         artwork.setDescription(artworkCreateRequest.description());
@@ -68,7 +67,7 @@ public class ArtworkService {
     public ArtworkResponse updateArtwork(Long id, ArtworkUpdateRequest artworkUpdateRequest) {
         Artwork artwork = artworkRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!udi.getId().equals(artwork.getUser().getId())) {
+        if (!udi.getId().equals(artwork.getOwner().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         if (lotRepository.existsByArtworkIdAndStatusNot(artwork.getId(), LotStatus.unsold)) {
@@ -92,12 +91,18 @@ public class ArtworkService {
     public void deleteArtwork(Long id) {
         Artwork artwork = artworkRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!udi.getId().equals(artwork.getUser().getId())) {
+        if (!udi.getId().equals(artwork.getOwner().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         if (lotRepository.existsByArtworkIdAndStatusNot(artwork.getId(), LotStatus.unsold)) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Ви не можете видалити роботу, якщо вона на аукціоні");
         }
         artworkRepository.delete(artwork);
+    }
+
+    public List<ArtworkPreviewResponse> getMyArtworks() {
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //todo везде проверять на нулл тк не доверяем контроллеру
+        List<Artwork> artworks = artworkRepository.findByOwnerId(udi.getId());
+        return artworks.stream().map(a -> artworkMapper.toArtworkPreviewResponse(a)).collect(Collectors.toList());
     }
 }

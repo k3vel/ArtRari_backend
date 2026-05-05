@@ -41,7 +41,13 @@ public class ArtworkController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('curator', 'admin')")
-    public List<ArtworkPreviewResponse> getAll() {
+    public List<ArtworkPreviewResponse> getAvailableArtworks() {
         return artworkService.getAvailableArtworks();
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('user')")
+    public List<ArtworkPreviewResponse> getMyArtworks() {
+        return artworkService.getMyArtworks();
     }
 }

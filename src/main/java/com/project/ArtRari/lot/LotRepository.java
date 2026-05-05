@@ -20,8 +20,8 @@ public interface LotRepository extends JpaRepository<Lot, Long> {
     Optional<Lot> findByIdForUpdate(@Param("lotId") Long lotId);
 
     @EntityGraph(attributePaths = {"artwork"})
-    @Query("SELECT l FROM Lot l WHERE l.status=com.project.ArtRari.lot.LotStatus.available AND l.endDate<=:now")
-    List<Lot> findLotsToClose(@Param("now") Instant now);
+    @Query("SELECT l FROM Lot l WHERE l.status=:status AND l.endDate<=:now")
+    List<Lot> findLotsToClose(@Param("now") Instant now, @Param("status") LotStatus status);
 
     boolean existsByArtworkIdAndStatusNot(Long artworkId, LotStatus status);
 }

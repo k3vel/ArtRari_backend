@@ -53,7 +53,7 @@ public class BidService {
         Auction auction = lot.getAuction();
         BigDecimal step = auction.getStep();
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long sellerId = lot.getArtwork().getUser().getId();
+        Long sellerId = lot.getArtwork().getOwner().getId();
         if (sellerId.equals(udi.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ви не можете робити ставку на свій лот.");
         }

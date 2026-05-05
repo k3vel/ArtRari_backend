@@ -25,12 +25,9 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             JOIN tag_work AS tw ON tw.work_id=w.id
             JOIN tag AS t ON tw.tag_id=t.id
             WHERE t.name IN :tags
-            AND (:search IS NULL OR LOWER(w.title) LIKE LOWER(CONCAT('%',:search,'%'))
-                            OR LOWER(w.author) LIKE LOWER(CONCAT('%',:search,'%'))
-                            OR LOWER(w.technique) LIKE LOWER(CONCAT('%',:search,'%')))
             AND e.status='running'::exhibition_status""", nativeQuery = true)
-    List<Exhibition> findBySearch(@Param("tags") List<String> tags, @Param("search") String search);
-
+    List<Exhibition> findByTags(@Param("tags") List<String> tags);
+/*
     @Query(value = """
             SELECT DISTINCT e.*
             FROM exhibition AS e
@@ -40,6 +37,7 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
                             OR LOWER(w.technique) LIKE LOWER(CONCAT('%',:search,'%')))
             AND e.status='running'::exhibition_status""", nativeQuery = true)
     List<Exhibition> findBySearchOnly(@Param("search") String search);
-
+*/
+    List<Exhibition> findByCuratorId(Long id);
 
 }

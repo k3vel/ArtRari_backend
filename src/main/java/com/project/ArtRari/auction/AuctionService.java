@@ -1,21 +1,17 @@
 package com.project.ArtRari.auction;
 
 import com.project.ArtRari.artwork.Artwork;
+import com.project.ArtRari.artwork.tag.TagRepository;
 import com.project.ArtRari.auction.dto.*;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
-import com.project.ArtRari.exhibition.ExhibitionService;
 import com.project.ArtRari.exhibition.ExhibitionStatus;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotMapper;
-import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
-import com.project.ArtRari.lot.dto.LotPreviewResponse;
-import com.project.ArtRari.lot.dto.LotResponse;
 import com.project.ArtRari.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,49 +26,33 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuctionService {
     private final AuctionRepository auctionRepository;
-    private final LotMapper lotMapper;
+    private final AuctionMapper auctionMapper;
     private final ExhibitionRepository exhibitionRepository;
-    private final LotRepository lotRepository;
-
-    private List<AuctionPreviewResponse> mapAuctionsIntoAuctionPreviewResponse(List<Auction> auctions) {
-        return auctions.stream()
-                .map(a -> new AuctionPreviewResponse(
-                        a.getId(),
-                        a.getExhibition().getTitle(),
-                        a.getExhibition().getTheme(),
-                        a.getExhibition().getThumbnailUrl(),
-                        a.getStartDate(),
-                        a.getEndDate()))
-                .toList();
-    }
-
-    private AuctionResponse mapAuctionIntoAuctionResponse(Auction auction) {
-        List<Lot> lots = auction.getLots();
-        List<LotPreviewResponse> safeLots = lots.stream().map(l -> lotMapper.toLotPreviewResponse(l)).toList();
-        return new AuctionResponse(
-                auction.getId(),
-                safeLots,
-                auction.getStartDate(),
-                auction.getEndDate(),
-                auction.getStatus().name()
-        );
-    }
+    private final TagRepository tagRepository;
 
     public List<AuctionPreviewResponse> getLatestAuctionsPreview() {
         List<Auction> auctions = auctionRepository.findByEndDateAfterOrderByStartDateDesc(Instant.now());
-        return mapAuctionsIntoAuctionPreviewResponse(auctions);
+        return auctionMapper.mapAuctionsIntoAuctionPreviewResponse(auctions);
     }
 
-    public AuctionsPageResponse getAuctions() {
-        List<Auction> auctions = auctionRepository.findByStatusOrStatus(AuctionStatus.scheduled, AuctionStatus.active);
-        return new AuctionsPageResponse(mapAuctionsIntoAuctionPreviewResponse(auctions));
+    public AuctionsPageResponse getAuctions(List<String> selectedTags) {
+        List<Auction> auctions;
+        boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
+        if (tagsIsEmpty) {
+            auctions = auctionRepository.findByStatusOrStatus(AuctionStatus.scheduled, AuctionStatus.active);
+        } else {
+            auctions = auctionRepository.findByTags(selectedTags);
+        }
+        List<AuctionPreviewResponse> aprs = auctionMapper.mapAuctionsIntoAuctionPreviewResponse(auctions);
+        List<String> tags = tagRepository.findAll().stream().map(tag -> tag.getName()).toList();
+        return new AuctionsPageResponse(tags, aprs);
     }
 
     public AuctionResponse getById(Long id) {
         Auction auction = auctionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return mapAuctionIntoAuctionResponse(auction);
+        return auctionMapper.mapAuctionIntoAuctionResponse(auction);
     }
 
     @Transactional
@@ -108,7 +88,7 @@ public class AuctionService {
         auction.setLots(lots);
         auctionRepository.save(auction);
 
-        return mapAuctionIntoAuctionResponse(auction);
+        return auctionMapper.mapAuctionIntoAuctionResponse(auction);
     }
 
     @Transactional
@@ -129,7 +109,7 @@ public class AuctionService {
         auction.setEndDate(request.endDate());
         auction.setStep(request.step());
         auctionRepository.save(auction);
-        return mapAuctionIntoAuctionResponse(auction);
+        return auctionMapper.mapAuctionIntoAuctionResponse(auction);
     }
 
     @Transactional
@@ -165,6 +145,12 @@ public class AuctionService {
         for (Auction auction : auctions) {
             auction.setStatus(AuctionStatus.finished);
         }
+    }
+
+    public List<AuctionPreviewResponse> getMyAuctions() {
+        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<Auction> auctions = auctionRepository.findByExhibitionCuratorId(udi.getId());
+        return auctionMapper.mapAuctionsIntoAuctionPreviewResponse(auctions);
     }
 
 }

@@ -11,7 +11,6 @@ import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -25,7 +24,7 @@ public class Artwork {
 
     @JoinColumn(name = "owner_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
+    private User owner;
 
     @JoinColumn(name = "exhibition_id")
     @ManyToOne(fetch = FetchType.LAZY)

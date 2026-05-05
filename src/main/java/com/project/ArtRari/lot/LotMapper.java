@@ -16,7 +16,7 @@ public class LotMapper {
 
     public LotResponse toLotResponse(Lot lot, Long userId) {
         Artwork artwork = lot.getArtwork();
-        boolean isMyLot = artwork.getUser().getId().equals(userId);
+        boolean isMyLot = artwork.getOwner().getId().equals(userId);
         ArtworkResponse safeArtwork = artworkMapper.toArtworkResponse(artwork);
         return new LotResponse(
                 lot.getId(),
@@ -32,7 +32,7 @@ public class LotMapper {
         Artwork artwork = lot.getArtwork();
         ArtworkPreviewResponse safeArtwork = artworkMapper.toArtworkPreviewResponse(artwork);
         return new LotPreviewResponse(
-                safeArtwork.id(),
+                lot.getId(),
                 safeArtwork.title(),
                 lot.getCurrentPrice(),
                 lot.getEndDate(),

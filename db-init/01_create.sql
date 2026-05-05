@@ -6,7 +6,7 @@ CREATE TYPE exhibition_status AS ENUM('running', 'converted_into_auction');
 
 CREATE TYPE auction_status AS ENUM('scheduled', 'active', 'finished');
 
-CREATE TYPE work_status AS ENUM('available', 'in_auction', 'sold');
+CREATE TYPE work_status AS ENUM('available', 'sold');
 
 CREATE TYPE lot_status AS ENUM('available', 'sold', 'unsold', 'cancelled');
 
@@ -43,7 +43,7 @@ CREATE TABLE exhibition (
 
 CREATE TABLE auction (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  exhibition_id BIGINT NOT NULL REFERENCES exhibition (id) ON DELETE CASCADE,
+  exhibition_id BIGINT UNIQUE NOT NULL REFERENCES exhibition (id) ON DELETE CASCADE,
   start_date TIMESTAMPTZ NOT NULL,
   auction_step NUMERIC(10, 2) NOT NULL,
   status auction_status NOT NULL DEFAULT 'scheduled',
@@ -68,7 +68,7 @@ CREATE TABLE work (
 
 CREATE TABLE lot (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  work_id BIGINT NOT NULL UNIQUE REFERENCES work (id) ON DELETE CASCADE,
+  work_id BIGINT NOT NULL REFERENCES work (id) ON DELETE CASCADE,
   auction_id BIGINT NOT NULL REFERENCES auction (id) ON DELETE CASCADE,
   current_price NUMERIC(12, 2) NOT NULL,
   end_date TIMESTAMPTZ NOT NULL,

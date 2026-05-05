@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/auctions")
 @RequiredArgsConstructor
@@ -13,8 +15,8 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @GetMapping
-    public AuctionsPageResponse getAuctions() {
-        return auctionService.getAuctions();
+    public AuctionsPageResponse getAuctions(@RequestParam(required = false) List<String> tags) {
+        return auctionService.getAuctions(tags);
     }
 
     @GetMapping("/{id}")
@@ -38,6 +40,12 @@ public class AuctionController {
     @PreAuthorize("hasRole('curator')")
     public void deleteAuction(@PathVariable Long id) {
         auctionService.deleteAuction(id);
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('curator')")
+    public List<AuctionPreviewResponse> getMyAuctions() {
+        return auctionService.getMyAuctions();
     }
 
 }

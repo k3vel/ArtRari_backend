@@ -10,7 +10,7 @@ public record AuctionPreviewResponse(
         String theme,
         //String description,
         String thumbnailUrl,
-        //AuctionStatus status, //todo list of tags
+        AuctionStatus status,
         Instant startDate,
         Instant endDate
 ) {}
