@@ -1,5 +1,7 @@
 package com.project.ArtRari.auction;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +16,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     List<Auction> findByEndDateAfterOrderByStartDateDesc(Instant now);
 
     @EntityGraph(attributePaths = {"exhibition"})
-    List<Auction> findByStatusOrStatus(AuctionStatus status1, AuctionStatus status2);
+    Page<Auction> findByStatusOrStatus(AuctionStatus status1, AuctionStatus status2, Pageable pageable );
 
     @Query(value = """
             SELECT DISTINCT a.*
@@ -26,10 +28,10 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
             WHERE t.name IN :tags
             AND (a.status='active'::auction_status
                  OR a.status='scheduled'::auction_status)""", nativeQuery = true)
-    List<Auction> findByTags(@Param("tags") List<String> tags);
+    Page<Auction> findByTags(@Param("tags") List<String> tags, Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = {"lots", "lots.artwork", "lots.artwork.user", "exhibition"})
+    @EntityGraph(attributePaths = {"lots", "lots.artwork", "lots.artwork.owner", "exhibition"})
     Optional<Auction> findById(Long id);
 
     boolean existsByExhibitionId(Long exhibitionId);
@@ -50,5 +52,5 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
             AND a.end_date<=:now""", nativeQuery = true)
     List<Auction> findAuctionsToClose(@Param("now") Instant now);
 
-    List<Auction> findByExhibitionCuratorId(Long exhibitionCuratorId);
+    Page<Auction> findByExhibitionCuratorId(Long exhibitionCuratorId, Pageable pageable);
 }

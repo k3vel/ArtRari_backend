@@ -5,6 +5,7 @@ import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +36,9 @@ public class ArtworkController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('user')")
-    public void deleteArtwork(@PathVariable Long id) {
+    public ResponseEntity<?> deleteArtwork(@PathVariable Long id) {
         artworkService.deleteArtwork(id);
+        return ResponseEntity.ok("Роботу успішно видалено");
     }
 
     @GetMapping

@@ -1,5 +1,7 @@
 package com.project.ArtRari.exhibition;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +18,7 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     @EntityGraph(attributePaths = {"artworks", "curator"})
     Optional<Exhibition> findByIdAndStatus(long id, ExhibitionStatus status);
 
-    List<Exhibition> findByStatus(ExhibitionStatus status);
+    Page<Exhibition> findByStatus(ExhibitionStatus status, Pageable pageable);
 
     @Query(value = """
             SELECT DISTINCT e.*
@@ -26,7 +28,7 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             JOIN tag AS t ON tw.tag_id=t.id
             WHERE t.name IN :tags
             AND e.status='running'::exhibition_status""", nativeQuery = true)
-    List<Exhibition> findByTags(@Param("tags") List<String> tags);
+    Page<Exhibition> findByTags(@Param("tags") List<String> tags, Pageable pageable);
 /*
     @Query(value = """
             SELECT DISTINCT e.*
@@ -38,6 +40,6 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             AND e.status='running'::exhibition_status""", nativeQuery = true)
     List<Exhibition> findBySearchOnly(@Param("search") String search);
 */
-    List<Exhibition> findByCuratorId(Long id);
+    Page<Exhibition> findByCuratorId(Long id, Pageable pageable);
 
 }

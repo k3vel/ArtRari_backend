@@ -7,6 +7,7 @@ import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionResponse;
 import com.project.ArtRari.user.dto.UserPreviewResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,14 +17,12 @@ import java.util.List;
 public class ExhibitionMapper {
     private final ArtworkMapper artworkMapper;
 
-    public List<ExhibitionPreviewResponse> mapExhibitionsIntoExhibitionPreviewResponse(List<Exhibition> exhibitions) {
-        return exhibitions.stream()
-                .map(e -> new ExhibitionPreviewResponse(
-                        e.getId(),
-                        e.getTitle(),
-                        e.getTheme(),
-                        e.getThumbnailUrl()))
-                .toList();
+    public ExhibitionPreviewResponse mapExhibitionIntoExhibitionPreviewResponse(Exhibition exhibition) {
+        return new ExhibitionPreviewResponse(
+                exhibition.getId(),
+                exhibition.getTitle(),
+                exhibition.getTheme(),
+                exhibition.getThumbnailUrl());
     }
 
     public ExhibitionResponse mapExhibitionIntoExhibitionResponse(Exhibition exhibition) {

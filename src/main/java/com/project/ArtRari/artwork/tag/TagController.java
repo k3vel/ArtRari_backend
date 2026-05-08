@@ -18,4 +18,4 @@ public class TagController {
         List<Tag> tags = tagRepository.findAll();
         return tags.stream().map(t -> new TagResponse(t.getId(), t.getName())).toList();
     }
-}
+}//todo curator/admin adds tags

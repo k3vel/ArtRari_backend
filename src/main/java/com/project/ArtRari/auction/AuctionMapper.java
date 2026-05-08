@@ -15,17 +15,15 @@ import java.util.List;
 public class AuctionMapper {
     private final LotMapper lotMapper;
 
-    public List<AuctionPreviewResponse> mapAuctionsIntoAuctionPreviewResponse(List<Auction> auctions) {
-        return auctions.stream()
-                .map(a -> new AuctionPreviewResponse(
-                        a.getId(),
-                        a.getExhibition().getTitle(),
-                        a.getExhibition().getTheme(),
-                        a.getExhibition().getThumbnailUrl(),
-                        a.getStatus(),
-                        a.getStartDate(),
-                        a.getEndDate()))
-                .toList();
+    public AuctionPreviewResponse mapAuctionIntoAuctionPreviewResponse(Auction auction) {
+        return new AuctionPreviewResponse(
+                auction.getId(),
+                auction.getExhibition().getTitle(),
+                auction.getExhibition().getTheme(),
+                auction.getExhibition().getThumbnailUrl(),
+                auction.getStatus(),
+                auction.getStartDate(),
+                auction.getEndDate());
     }
 
     public AuctionResponse mapAuctionIntoAuctionResponse(Auction auction) {

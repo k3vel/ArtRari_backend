@@ -7,7 +7,6 @@ import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import com.project.ArtRari.user.UserService;
-import com.project.ArtRari.user.dto.UserResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,15 +44,13 @@ public class SecurityController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateToken(authentication);
         UserDetailsImpl udi = (UserDetailsImpl) authentication.getPrincipal();
-        UserResponse user = new UserResponse(
+        AuthResponse authResponse = new AuthResponse(
+                jwt,
                 udi.getId(),
                 udi.getFirstName(),
                 udi.getLastName(),
-                udi.getPhone(),
-                udi.getEmail(),
                 udi.getRole().name()
         );
-        AuthResponse authResponse = new AuthResponse(jwt, user);
         return ResponseEntity.ok(authResponse);
     }
 

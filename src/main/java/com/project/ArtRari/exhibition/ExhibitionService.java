@@ -3,12 +3,18 @@ package com.project.ArtRari.exhibition;
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.artwork.ArtworkRepository;
 import com.project.ArtRari.artwork.tag.TagRepository;
+import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exhibition.dto.*;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +33,14 @@ public class ExhibitionService {
     private final UserRepository userRepository;
     private final ArtworkRepository artworkRepository;
 
+    @Value("${app.pagination.default-size}")
+    private int pageSize;
+
     public List<ExhibitionPreviewResponse> getTop6Preview() {
         List<Exhibition> exhibitions = exhibitionRepository.findTop6ByStatusOrderByIdDesc(ExhibitionStatus.running);
-        return exhibitionMapper.mapExhibitionsIntoExhibitionPreviewResponse(exhibitions);
+        return exhibitions.stream().map(
+                exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse
+        ).collect(Collectors.toList());
     }
 
     public ExhibitionResponse getById(Long id) {
@@ -38,17 +50,19 @@ public class ExhibitionService {
         return exhibitionMapper.mapExhibitionIntoExhibitionResponse(exhibition);
     }
 
-    public ExhibitionsPageResponse getExhibitions(List<String> selectedTags) {
-        List<Exhibition> exhibitions;
+    public ExhibitionsPageResponse getExhibitions(int page, List<String> selectedTags) {
+        Page<Exhibition> exhibitions;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
         boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
         if (tagsIsEmpty) {
-            exhibitions = exhibitionRepository.findByStatus(ExhibitionStatus.running);
+            exhibitions = exhibitionRepository.findByStatus(ExhibitionStatus.running, pageable);
         } else {
-            exhibitions = exhibitionRepository.findByTags(selectedTags);
+            exhibitions = exhibitionRepository.findByTags(selectedTags, pageable);
         }
-        List<ExhibitionPreviewResponse> eprs = exhibitionMapper.mapExhibitionsIntoExhibitionPreviewResponse(exhibitions);
+        Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse);
+        PageResponse<ExhibitionPreviewResponse> pageResponse = new PageResponse<>(eprs);
         List<String> tags = tagRepository.findAll().stream().map(tag -> tag.getName()).toList();
-        return new ExhibitionsPageResponse(tags, eprs);
+        return new ExhibitionsPageResponse(tags, pageResponse);
     }
 
     @Transactional
@@ -118,9 +132,11 @@ public class ExhibitionService {
         exhibitionRepository.delete(exhibition);
     }
 
-    public List<ExhibitionPreviewResponse> getMyExhibitions() {
+    public PageResponse<ExhibitionPreviewResponse> getMyExhibitions(int page) {
         UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<Exhibition> exhibitions = exhibitionRepository.findByCuratorId(udi.getId());
-        return exhibitionMapper.mapExhibitionsIntoExhibitionPreviewResponse(exhibitions);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
+        Page<Exhibition> exhibitions = exhibitionRepository.findByCuratorId(udi.getId(), pageable);
+        Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse);
+        return new PageResponse<>(eprs);
     }
 }

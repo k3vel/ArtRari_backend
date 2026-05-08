@@ -1,8 +1,10 @@
 package com.project.ArtRari.auction;
 
 import com.project.ArtRari.auction.dto.*;
+import com.project.ArtRari.common.PageResponse;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +17,11 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @GetMapping
-    public AuctionsPageResponse getAuctions(@RequestParam(required = false) List<String> tags) {
-        return auctionService.getAuctions(tags);
+    public AuctionsPageResponse getAuctions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) List<String> tags
+    ) {
+        return auctionService.getAuctions(page, tags);
     }
 
     @GetMapping("/{id}")
@@ -38,14 +43,15 @@ public class AuctionController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('curator')")
-    public void deleteAuction(@PathVariable Long id) {
+    public ResponseEntity<?> deleteAuction(@PathVariable Long id) {
         auctionService.deleteAuction(id);
+        return ResponseEntity.ok("Аукціон успішно видалено");
     }
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('curator')")
-    public List<AuctionPreviewResponse> getMyAuctions() {
-        return auctionService.getMyAuctions();
+    public PageResponse<AuctionPreviewResponse> getMyAuctions(@RequestParam(defaultValue = "0") int page) {
+        return auctionService.getMyAuctions(page);
     }
 
 }
