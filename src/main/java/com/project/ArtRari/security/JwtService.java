@@ -15,7 +15,7 @@ public class JwtService{
     @Value("${jwt.secret}")
     private String secret;
     @Value("${jwt.expirationMs}")
-    private int expirationMs; //todo продлевать срок токена при активности на сайте
+    private int expirationMs;
 
     private Key getSecret() {
         return Keys.hmacShaKeyFor(secret.getBytes());
