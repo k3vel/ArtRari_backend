@@ -4,6 +4,7 @@ import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.dto.PasswordChangeRequest;
 import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
+import com.project.ArtRari.stats.dto.StatsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,11 +24,12 @@ public class UserController {
     }
 
     @PutMapping
-    public ProfileResponse updateProfile(
+    public ResponseEntity<ProfileResponse> updateProfile(
             @AuthenticationPrincipal UserDetailsImpl udi,
             @RequestBody ProfileUpdateRequest profileUpdateRequest
     ) {
-        return userService.updateProfile(udi, profileUpdateRequest);
+        ProfileResponse profileResponse = userService.updateProfile(udi, profileUpdateRequest);
+        return ResponseEntity.ok(profileResponse);
     }
 
     @PostMapping("/password")
@@ -36,8 +38,7 @@ public class UserController {
             @RequestBody PasswordChangeRequest passwordChangeRequest
     ) {
         userService.changePassword(udi, passwordChangeRequest);
-        return ResponseEntity.ok("Пароль успішно змінено");
+        return ResponseEntity.noContent().build();
     }
-
 
 }

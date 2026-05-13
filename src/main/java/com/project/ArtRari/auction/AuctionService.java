@@ -70,13 +70,12 @@ public class AuctionService {
     }
 
     @Transactional
-    public AuctionResponse createAuction(AuctionCreateRequest request) {
+    public AuctionResponse createAuction(AuctionCreateRequest request, UserDetailsImpl udi) {
         Exhibition exhibition = exhibitionRepository.findByIdAndStatus(request.exhibitionId(), ExhibitionStatus.running)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (auctionRepository.existsByExhibitionId(exhibition.getId())) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Auction for this exhibition already exists");
         }
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -106,12 +105,11 @@ public class AuctionService {
     }
 
     @Transactional
-    public AuctionResponse updateAuction(Long id, AuctionUpdateRequest request) {
+    public AuctionResponse updateAuction(Long id, AuctionUpdateRequest request, UserDetailsImpl udi) {
         Auction auction = auctionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         Exhibition exhibition = auction.getExhibition();
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -127,12 +125,11 @@ public class AuctionService {
     }
 
     @Transactional
-    public void deleteAuction(Long id) {
+    public void deleteAuction(Long id, UserDetailsImpl udi) {
         Auction auction = auctionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         Exhibition exhibition = auction.getExhibition();
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -162,8 +159,7 @@ public class AuctionService {
         }
     }
 
-    public PageResponse<AuctionPreviewResponse> getMyAuctions(int page) {
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public PageResponse<AuctionPreviewResponse> getMyAuctions(int page, UserDetailsImpl udi) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
         Page<Auction> auctions = auctionRepository.findByExhibitionCuratorId(udi.getId(), pageable);
         Page<AuctionPreviewResponse> eprs = auctions.map(auctionMapper::mapAuctionIntoAuctionPreviewResponse);

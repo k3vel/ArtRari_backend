@@ -1,5 +1,6 @@
 package com.project.ArtRari.artwork;
 
+import com.project.ArtRari.artwork.dto.ArtworkAdvancedPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.tag.Tag;
@@ -41,6 +42,20 @@ public class ArtworkMapper {
                 artwork.getId(),
                 artwork.getTitle(),
                 safeTags,
+                artwork.getPhotoUrl()
+        );
+    }
+
+    public ArtworkAdvancedPreviewResponse toArtworkAdvancedPreviewResponse(Artwork artwork) {
+        List<Tag> tags = artwork.getTags();
+        List<String> safeTags = tags.stream().map(t -> t.getName()).toList();
+        return new ArtworkAdvancedPreviewResponse(
+                artwork.getId(),
+                artwork.getTitle(),
+                artwork.getAuthor(),
+                safeTags,
+                artwork.getTechnique(),
+                artwork.getStartPrice(),
                 artwork.getPhotoUrl()
         );
     }

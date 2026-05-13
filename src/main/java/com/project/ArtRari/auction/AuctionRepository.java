@@ -53,4 +53,6 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     List<Auction> findAuctionsToClose(@Param("now") Instant now);
 
     Page<Auction> findByExhibitionCuratorId(Long exhibitionCuratorId, Pageable pageable);
+
+    int countAllByExhibitionCuratorId(Long exhibitionCuratorId);
 }

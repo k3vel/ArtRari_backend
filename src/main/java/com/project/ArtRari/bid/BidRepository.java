@@ -15,4 +15,8 @@ public interface BidRepository extends JpaRepository<Bid, Integer> {
 
     @EntityGraph(attributePaths = {"user"})
     Optional<Bid> findTopByLotIdOrderByAmountDesc(Long lotId);
+
+    int countAllByUserId(Long userId);
+
+    int countAllByIsWinTrueAndUserId(Long userId);
 }

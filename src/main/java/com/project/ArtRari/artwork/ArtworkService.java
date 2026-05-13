@@ -1,11 +1,9 @@
 package com.project.ArtRari.artwork;
 
-import com.project.ArtRari.artwork.dto.ArtworkCreateRequest;
-import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
-import com.project.ArtRari.artwork.dto.ArtworkResponse;
-import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
+import com.project.ArtRari.artwork.dto.*;
 import com.project.ArtRari.artwork.tag.Tag;
 import com.project.ArtRari.artwork.tag.TagRepository;
+import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
@@ -14,6 +12,11 @@ import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,9 @@ public class ArtworkService {
     private final TagRepository tagRepository;
     private final LotRepository lotRepository;
 
+    @Value("${app.pagination.default-size}")
+    private int pageSize;
+
     public ArtworkResponse getById(Long id) {
         Artwork artwork = artworkRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -38,15 +44,20 @@ public class ArtworkService {
         return artworkMapper.toArtworkResponse(artwork);
     }
 
-    public List<ArtworkPreviewResponse> getAvailableArtworks() {
-        List<Artwork> artworks = artworkRepository.findByStatusAndExhibitionIsNull(WorkStatus.available);
-        return artworks.stream().map(a -> artworkMapper.toArtworkPreviewResponse(a)).collect(Collectors.toList());
+    public PageResponse<ArtworkAdvancedPreviewResponse> getAvailableArtworks(int page) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("creationDate").descending());
+        Page<Artwork> artworks = artworkRepository.findByStatusAndExhibitionIsNull(WorkStatus.available, pageable);
+        Page<ArtworkAdvancedPreviewResponse> artworkResponses = artworks.map(
+                a -> artworkMapper.toArtworkAdvancedPreviewResponse(a)
+        );
+        return new PageResponse<>(artworkResponses);
     }
 
     @Transactional
-    public ArtworkResponse addArtwork(ArtworkCreateRequest artworkCreateRequest) {
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userRepository.findById(udi.getId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    public ArtworkResponse addArtwork(ArtworkCreateRequest artworkCreateRequest, UserDetailsImpl udi) {
+        User user = userRepository.findById(udi.getId()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
         List<Tag> tags = artworkCreateRequest.tags().stream().map(t -> tagRepository.getReferenceById(t)).toList();
         Artwork artwork = new Artwork();
         artwork.setOwner(user);
@@ -64,11 +75,12 @@ public class ArtworkService {
     }
 
     @Transactional
-    public ArtworkResponse updateArtwork(Long id, ArtworkUpdateRequest artworkUpdateRequest) {
-        Artwork artwork = artworkRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ArtworkResponse updateArtwork(Long id, ArtworkUpdateRequest artworkUpdateRequest, UserDetailsImpl udi) {
+        Artwork artwork = artworkRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
         if (!udi.getId().equals(artwork.getOwner().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ArtrariException(HttpStatus.FORBIDDEN, "Ви не можете редагувати чужу роботу");
         }
         if (lotRepository.existsByArtworkIdAndStatusNot(artwork.getId(), LotStatus.unsold)) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Ви не можете редагувати роботу, якщо вона на аукціоні");
@@ -88,9 +100,10 @@ public class ArtworkService {
     }
 
     @Transactional
-    public void deleteArtwork(Long id) {
-        Artwork artwork = artworkRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public void deleteArtwork(Long id, UserDetailsImpl udi) {
+        Artwork artwork = artworkRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
         if (!udi.getId().equals(artwork.getOwner().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -100,9 +113,12 @@ public class ArtworkService {
         artworkRepository.delete(artwork);
     }
 
-    public List<ArtworkPreviewResponse> getMyArtworks() {
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //todo везде проверять на нулл тк не доверяем контроллеру
-        List<Artwork> artworks = artworkRepository.findByOwnerId(udi.getId());
-        return artworks.stream().map(a -> artworkMapper.toArtworkPreviewResponse(a)).collect(Collectors.toList());
+    public PageResponse<ArtworkPreviewResponse> getMyArtworks(int page, UserDetailsImpl udi) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("creationDate").descending());
+        Page<Artwork> artworks = artworkRepository.findByOwnerId(udi.getId(), pageable);
+        Page<ArtworkPreviewResponse> artworkResponses = artworks.map(
+                a -> artworkMapper.toArtworkPreviewResponse(a)
+        );
+        return new PageResponse<>(artworkResponses);
     }
 }
