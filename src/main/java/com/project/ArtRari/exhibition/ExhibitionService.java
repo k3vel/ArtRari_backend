@@ -57,7 +57,7 @@ public class ExhibitionService {
         if (tagsIsEmpty) {
             exhibitions = exhibitionRepository.findByStatus(ExhibitionStatus.running, pageable);
         } else {
-            exhibitions = exhibitionRepository.findByTags(selectedTags, pageable);
+            exhibitions = exhibitionRepository.findByTagsAndStatus(selectedTags, ExhibitionStatus.running, pageable);
         }
         Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse);
         PageResponse<ExhibitionPreviewResponse> pageResponse = new PageResponse<>(eprs);

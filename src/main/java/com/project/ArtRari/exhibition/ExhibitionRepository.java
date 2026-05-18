@@ -20,26 +20,19 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
 
     Page<Exhibition> findByStatus(ExhibitionStatus status, Pageable pageable);
 
-    @Query(value = """
-            SELECT DISTINCT e.*
-            FROM exhibition AS e
-            JOIN work AS w ON w.exhibition_id=e.id
-            JOIN tag_work AS tw ON tw.work_id=w.id
-            JOIN tag AS t ON tw.tag_id=t.id
+    @Query("""
+            SELECT DISTINCT e
+            FROM Exhibition AS e
+            JOIN e.artworks AS w
+            JOIN w.tags AS t
             WHERE t.name IN :tags
-            AND e.status='running'::exhibition_status""", nativeQuery = true)
-    Page<Exhibition> findByTags(@Param("tags") List<String> tags, Pageable pageable);
-/*
-    @Query(value = """
-            SELECT DISTINCT e.*
-            FROM exhibition AS e
-            JOIN work AS w ON w.exhibition_id=e.id
-            WHERE (:search IS NULL OR LOWER(w.title) LIKE LOWER(CONCAT('%',:search,'%'))
-                            OR LOWER(w.author) LIKE LOWER(CONCAT('%',:search,'%'))
-                            OR LOWER(w.technique) LIKE LOWER(CONCAT('%',:search,'%')))
-            AND e.status='running'::exhibition_status""", nativeQuery = true)
-    List<Exhibition> findBySearchOnly(@Param("search") String search);
-*/
+            AND e.status=:status""")
+    Page<Exhibition> findByTagsAndStatus(
+            @Param("tags") List<String> tags,
+            @Param("status") ExhibitionStatus exhibitionStatus,
+            Pageable pageable
+    );
+
     Page<Exhibition> findByCuratorId(Long id, Pageable pageable);
 
     int countAllByCuratorId(Long id);

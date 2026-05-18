@@ -3,6 +3,7 @@ package com.project.ArtRari.bid;
 import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.auction.AuctionStatus;
 import com.project.ArtRari.bid.dto.BidPreviewResponse;
+import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
@@ -11,17 +12,16 @@ import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -29,40 +29,53 @@ public class BidService {
     private final BidRepository bidRepository;
     private final LotRepository lotRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public List<BidPreviewResponse> getBidPreviews(Long lotId) {
-        List<Bid> bids = bidRepository.findByLotId(lotId);
-        Long userId = null;
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof UserDetailsImpl udi) {
-            userId = udi.getId();
+    private Map<Long,Integer> getAnonymousIds(Long lotId) {
+        List<Bid> bids = bidRepository.findByLotIdOrderByCreatedAtDesc(lotId);
+        Map<Long, Integer> anonymousIds = new HashMap<>();
+        int i = 1;
+        for (Bid bid : bids) {
+            Long currentBidderId = bid.getUser().getId();
+            if (!anonymousIds.containsKey(currentBidderId)) {
+                anonymousIds.put(currentBidderId, i++);
+            }
         }
-        final Long finalUserId = userId;
-        return bids.stream().map(b -> new BidPreviewResponse(
-                b.getUser().getId().equals(finalUserId) ? "Ви" : "Невідомий поціновувач мистецтва",
-                b.getAmount(),
-                b.getCreatedAt()
-        )).sorted(Comparator.comparing(BidPreviewResponse::createdAt).reversed()).collect(Collectors.toList());
+        return anonymousIds;
     }
 
+    public List<BidPreviewResponse> getBidPreviews(Long lotId, UserDetailsImpl udi) {
+        List<Bid> bids = bidRepository.findByLotIdOrderByCreatedAtDesc(lotId);
+        //Long userId = udi == null ? null : udi.getId();
+        Map<Long,Integer> anonymousIds = getAnonymousIds(lotId);
+        return bids.stream().map(b -> new BidPreviewResponse(
+                /*
+                b.getUser().getId().equals(userId)
+                        ? "Ви"
+                        : "Невідомий поціновувач мистецтва " + anonymousIds.get(b.getUser().getId()),*/
+                "Невідомий поціновувач мистецтва " + anonymousIds.get(b.getUser().getId()),
+                b.getAmount(),
+                b.getCreatedAt()
+        )).toList();
+    }//todo clean?
+
     @Transactional
-    public void placeBid(Long lotId, BigDecimal amount) {
+    public void placeBid(Long lotId, BigDecimal amount, UserDetailsImpl udi) {
         Lot lot = lotRepository.findByIdForUpdate(lotId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         Auction auction = lot.getAuction();
         BigDecimal step = auction.getStep();
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long sellerId = lot.getArtwork().getOwner().getId();
         if (sellerId.equals(udi.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ви не можете робити ставку на свій лот.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ви не можете робити ставку на свій лот.");
         }
         if (!auction.getStatus().equals(AuctionStatus.active))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Аукціон вже закінчився.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Аукціон вже закінчився.");
         if (!lot.getStatus().equals(LotStatus.available))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Цей лот не доступний.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот не доступний.");
         if (amount.compareTo(lot.getCurrentPrice().add(step)) < 0)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ставка є замалою.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ставка є замалою.");
 
         if (Duration.between(Instant.now(), lot.getEndDate()).toMinutes() < 10) {
             lot.setEndDate(Instant.now().plusSeconds(600));
@@ -78,7 +91,15 @@ public class BidService {
         bid.setAmount(amount);
         bid.setCreatedAt(Instant.now());
         bid.setWin(false);
-        bidRepository.save(bid);
+        Bid savedBid = bidRepository.save(bid);
+
+        Integer userId = getAnonymousIds(savedBid.getLot().getId()).get(savedBid.getUser().getId());
+        BidPreviewResponse response = new BidPreviewResponse(
+                "Невідомий поціновувач мистецтва " + userId,
+                savedBid.getAmount(),
+                savedBid.getCreatedAt()
+        );
+        messagingTemplate.convertAndSend("/topic/lots/" + savedBid.getLot().getId() + "/bids", response);
     }
 
 }

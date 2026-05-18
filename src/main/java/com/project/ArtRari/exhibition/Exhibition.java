@@ -65,4 +65,3 @@ public class Exhibition {
         setArtworks(artworks);
     }
 }
-//todo nullable/not null annotations
