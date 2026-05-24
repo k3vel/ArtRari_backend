@@ -3,7 +3,7 @@ package com.project.ArtRari.purchase.dto;
 import java.math.BigDecimal;
 
 public record PurchasePreviewResponse(
-        Long id,
+        Long lotId,
         String title,
         String thumbnailUrl,
         BigDecimal finalPrice,

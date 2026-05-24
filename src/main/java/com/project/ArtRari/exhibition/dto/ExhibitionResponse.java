@@ -9,6 +9,7 @@ import java.util.List;
 public record ExhibitionResponse(
         Long id,
         String title,
+        String thumbnailUrl,
         List<ArtworkPreviewResponse> artworks,
         String description,
         String backgroundUrl,

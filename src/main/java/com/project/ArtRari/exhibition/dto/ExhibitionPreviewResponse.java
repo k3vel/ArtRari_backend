@@ -4,5 +4,6 @@ public record ExhibitionPreviewResponse(
         Long id,
         String title,
         String theme,
-        String thumbnailUrl
+        String thumbnailUrl,
+        String status
 ) {}

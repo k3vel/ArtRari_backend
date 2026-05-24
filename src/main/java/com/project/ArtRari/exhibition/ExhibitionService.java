@@ -4,6 +4,7 @@ import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.artwork.ArtworkRepository;
 import com.project.ArtRari.artwork.tag.TagRepository;
 import com.project.ArtRari.common.PageResponse;
+import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.exhibition.dto.*;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.User;
@@ -39,7 +40,7 @@ public class ExhibitionService {
     public List<ExhibitionPreviewResponse> getTop6Preview() {
         List<Exhibition> exhibitions = exhibitionRepository.findTop6ByStatusOrderByIdDesc(ExhibitionStatus.running);
         return exhibitions.stream().map(
-                exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse
+                exhibitionMapper::toExhibitionPreviewResponse
         ).collect(Collectors.toList());
     }
 
@@ -47,7 +48,7 @@ public class ExhibitionService {
         Exhibition exhibition = exhibitionRepository.findByIdAndStatus(id, ExhibitionStatus.running).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        return exhibitionMapper.mapExhibitionIntoExhibitionResponse(exhibition);
+        return exhibitionMapper.toExhibitionResponse(exhibition);
     }
 
     public ExhibitionsPageResponse getExhibitions(int page, List<String> selectedTags) {
@@ -59,15 +60,14 @@ public class ExhibitionService {
         } else {
             exhibitions = exhibitionRepository.findByTagsAndStatus(selectedTags, ExhibitionStatus.running, pageable);
         }
-        Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse);
+        Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::toExhibitionPreviewResponse);
         PageResponse<ExhibitionPreviewResponse> pageResponse = new PageResponse<>(eprs);
         List<String> tags = tagRepository.findAll().stream().map(tag -> tag.getName()).toList();
         return new ExhibitionsPageResponse(tags, pageResponse);
     }
 
     @Transactional
-    public ExhibitionResponse createExhibition(ExhibitionCreateRequest exhibitionCreateRequest) {
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ExhibitionResponse createExhibition(ExhibitionCreateRequest exhibitionCreateRequest, UserDetailsImpl udi) {
         User curator = userRepository.getReferenceById(udi.getId());
         Exhibition exhibition = new Exhibition();
         exhibition.setCurator(curator);
@@ -85,15 +85,17 @@ public class ExhibitionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
         Exhibition savedExhibition = exhibitionRepository.save(exhibition);
-        return exhibitionMapper.mapExhibitionIntoExhibitionResponse(savedExhibition);
+        return exhibitionMapper.toExhibitionResponse(savedExhibition);
     }
 
     @Transactional
-    public ExhibitionResponse updateExhibition(Long id, ExhibitionUpdateRequest exhibitionUpdateRequest) {
+    public ExhibitionResponse updateExhibition(
+            Long id,
+            ExhibitionUpdateRequest exhibitionUpdateRequest,
+            UserDetailsImpl udi) {
         Exhibition exhibition = exhibitionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -113,15 +115,14 @@ public class ExhibitionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
         Exhibition savedExhibition = exhibitionRepository.save(exhibition);
-        return exhibitionMapper.mapExhibitionIntoExhibitionResponse(savedExhibition);
+        return exhibitionMapper.toExhibitionResponse(savedExhibition);
     }
 
     @Transactional
-    public void deleteExhibition(Long id) {
+    public void deleteExhibition(Long id, UserDetailsImpl udi) {
         Exhibition exhibition = exhibitionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -132,11 +133,20 @@ public class ExhibitionService {
         exhibitionRepository.delete(exhibition);
     }
 
-    public PageResponse<ExhibitionPreviewResponse> getMyExhibitions(int page) {
-        UserDetailsImpl udi = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public PageResponse<ExhibitionPreviewResponse> getMyExhibitions(int page, UserDetailsImpl udi) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
         Page<Exhibition> exhibitions = exhibitionRepository.findByCuratorId(udi.getId(), pageable);
-        Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::mapExhibitionIntoExhibitionPreviewResponse);
+        Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::toExhibitionPreviewResponse);
         return new PageResponse<>(eprs);
+    }
+
+    public ExhibitionAdvancedResponse getMyExhibitionAdvanced(Long id, UserDetailsImpl udi) {
+        Exhibition exhibition = exhibitionRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        if (!udi.getId().equals(exhibition.getCurator().getId())) {
+            throw new ArtrariException(HttpStatus.FORBIDDEN, "Ця виставка не належить Вам");
+        }
+        return exhibitionMapper.toExhibitionAdvancedResponse(exhibition);
     }
 }

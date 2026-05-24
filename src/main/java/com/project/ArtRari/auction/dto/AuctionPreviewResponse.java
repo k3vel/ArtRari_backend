@@ -8,7 +8,7 @@ public record AuctionPreviewResponse(
         Long id,
         String title,
         String theme,
-        //String description,
+        String description,
         String thumbnailUrl,
         AuctionStatus status,
         Instant startDate,

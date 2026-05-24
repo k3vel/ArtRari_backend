@@ -2,6 +2,7 @@ package com.project.ArtRari.lot;
 
 import com.project.ArtRari.lot.dto.LotResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,8 +12,8 @@ public class LotController {
     private final LotService lotService;
 
     @GetMapping("/{id}")
-    public LotResponse getLot(@PathVariable Long id) {
-        return lotService.getById(id);
+    public ResponseEntity<LotResponse> getLot(@PathVariable Long id) {
+        return ResponseEntity.ok(lotService.getById(id));
     }
 
 

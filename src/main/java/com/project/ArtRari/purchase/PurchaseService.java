@@ -17,7 +17,7 @@ public class PurchaseService {
 
     private List<PurchasePreviewResponse> mapPurchasesIntoPurchasePreviewResponse(List<Purchase> purchases) {
         return purchases.stream().map(p -> new PurchasePreviewResponse(
-                p.getId(),
+                p.getLot().getId(),
                 p.getLot().getArtwork().getTitle(),
                 p.getLot().getArtwork().getPhotoUrl(),
                 p.getFinalPrice(),

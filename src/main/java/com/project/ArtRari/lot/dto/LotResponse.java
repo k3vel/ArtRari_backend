@@ -8,7 +8,9 @@ import java.time.Instant;
 public record LotResponse(
    Long id,
    ArtworkResponse artwork,
+   BigDecimal startPrice,
    BigDecimal currentPrice,
+   BigDecimal step,
    Instant endDate,
    String status,
    boolean isMyLot

@@ -1,5 +1,6 @@
 package com.project.ArtRari.security;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -27,6 +28,18 @@ public class JwtService{
                 .setExpiration(new Date((new Date()).getTime() + expirationMs))
                 .signWith(SignatureAlgorithm.HS256,getSecret())
                 .compact();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSecret())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     public String getNameFromJwt(String token) {

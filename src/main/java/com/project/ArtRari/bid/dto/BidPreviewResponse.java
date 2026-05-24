@@ -6,5 +6,6 @@ import java.time.Instant;
 public record BidPreviewResponse(
         String user,
         BigDecimal amount,
-        Instant createdAt
+        Instant createdAt,
+        boolean isMyBid
 ) {}

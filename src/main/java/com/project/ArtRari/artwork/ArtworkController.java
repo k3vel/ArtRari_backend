@@ -73,4 +73,12 @@ public class ArtworkController {
         PageResponse<ArtworkPreviewResponse> pageResponse = artworkService.getMyArtworks(page, udi);
         return ResponseEntity.ok(pageResponse);
     }
+
+    @GetMapping("/my/{id}")
+    @PreAuthorize("hasRole('user')")
+    public ResponseEntity<MyArtworkResponse> getMyArtwork(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl udi) {
+        return ResponseEntity.ok(artworkService.getMyArtwork(id, udi));
+    }
 }

@@ -21,7 +21,9 @@ public class LotMapper {
         return new LotResponse(
                 lot.getId(),
                 safeArtwork,
+                artwork.getStartPrice(),
                 lot.getCurrentPrice(),
+                lot.getAuction().getStep(),
                 lot.getEndDate(),
                 lot.getStatus().name(),
                 isMyLot

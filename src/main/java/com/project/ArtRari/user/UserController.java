@@ -19,8 +19,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ProfileResponse getProfile(@AuthenticationPrincipal UserDetailsImpl udi) {
-        return userService.getProfile(udi);
+    public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal UserDetailsImpl udi) {
+        return ResponseEntity.ok(userService.getProfile(udi));
     }
 
     @PutMapping

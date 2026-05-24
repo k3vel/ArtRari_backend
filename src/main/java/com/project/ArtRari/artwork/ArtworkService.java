@@ -121,4 +121,14 @@ public class ArtworkService {
         );
         return new PageResponse<>(artworkResponses);
     }
+
+    public MyArtworkResponse getMyArtwork(Long id, UserDetailsImpl udi) {
+        Artwork artwork = artworkRepository.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        if (!udi.getId().equals(artwork.getOwner().getId())) {
+            throw new ArtrariException(HttpStatus.FORBIDDEN, "Ця робота не належить Вам");
+        }
+        return artworkMapper.toMyArtworkResponse(artwork);
+    }
 }

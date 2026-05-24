@@ -4,6 +4,8 @@ import com.project.ArtRari.bid.dto.BidPlaceRequest;
 import com.project.ArtRari.bid.dto.BidPreviewResponse;
 import com.project.ArtRari.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,21 +19,22 @@ public class BidController {
     private final BidService bidService;
 
     @GetMapping
-    public List<BidPreviewResponse> getBids(
+    public ResponseEntity<List<BidPreviewResponse>> getBids(
             @PathVariable Long lotId,
             @AuthenticationPrincipal UserDetailsImpl udi
     ) {
-        return bidService.getBidPreviews(lotId, udi);
+        return ResponseEntity.ok(bidService.getBidPreviews(lotId, udi));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('user')")
-    public void placeBid(
+    public ResponseEntity<BidPreviewResponse> placeBid(
             @PathVariable Long lotId,
             @RequestBody BidPlaceRequest bidPlaceRequest,
             @AuthenticationPrincipal UserDetailsImpl udi
     ) {
-        bidService.placeBid(lotId, bidPlaceRequest.amount(), udi);
+        BidPreviewResponse response = bidService.placeBid(lotId, bidPlaceRequest.amount(), udi);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 }

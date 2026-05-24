@@ -4,6 +4,7 @@ import com.project.ArtRari.artwork.WorkStatus;
 import com.project.ArtRari.bid.Bid;
 import com.project.ArtRari.bid.BidRepository;
 import com.project.ArtRari.lot.dto.LotResponse;
+import com.project.ArtRari.lot.dto.LotWonEvent;
 import com.project.ArtRari.purchase.Purchase;
 import com.project.ArtRari.purchase.PurchaseRepository;
 import com.project.ArtRari.purchase.PurchaseStatus;
@@ -11,6 +12,7 @@ import com.project.ArtRari.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -29,13 +31,16 @@ public class LotService {
     private final LotMapper lotMapper;
     private final BidRepository bidRepository;
     private final PurchaseRepository purchaseRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     @Lazy
     private LotService lotService;
 
     public LotResponse getById(Long id) {
-        Lot lot = lotRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Lot lot = lotRepository.findWithArtworkAndAuctionById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
         Long userId = null;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof UserDetailsImpl udi) {
@@ -67,6 +72,11 @@ public class LotService {
             purchase.setWinDate(Instant.now());
             purchase.setStatus(PurchaseStatus.pending_payment);
             purchaseRepository.save(purchase);
+
+            eventPublisher.publishEvent(new LotWonEvent(
+                    winner.getUser().getEmail(),
+                    lotMapper.toLotPreviewResponse(lot)
+            ));
         } else {
             lot.setStatus(LotStatus.unsold);
             lot.getArtwork().setExhibition(null);

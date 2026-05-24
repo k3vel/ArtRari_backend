@@ -14,6 +14,10 @@ import java.util.Optional;
 
 @Repository
 public interface LotRepository extends JpaRepository<Lot, Long> {
+
+    @EntityGraph(attributePaths = {"artwork", "artwork.owner", "auction"})
+    Optional<Lot> findWithArtworkAndAuctionById(Long id);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(attributePaths = {"artwork", "auction", "artwork.owner"})
     @Query("SELECT l FROM Lot l WHERE l.id=:lotId")

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -33,31 +34,25 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(udi.getId()).orElseThrow(
                 () -> new ArtrariException(HttpStatus.NOT_FOUND, "Такого користувача не існує")
         );
-        return new ProfileResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getPhone(),
-                user.getEmail()
-        );
+        return userMapper.toProfileResponse(user);
     }
 
     @Transactional
     public ProfileResponse updateProfile(UserDetailsImpl udi, ProfileUpdateRequest profileUpdateRequest) {
+        if (userRepository.existsByEmail(profileUpdateRequest.newEmail())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Цей email вже зайнятий");
+        }
+        if (userRepository.existsByPhone(profileUpdateRequest.newPhone())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Цей телефон вже зайнятий");
+        }
         User user = userRepository.findById(udi.getId()).orElseThrow(
                 () -> new ArtrariException(HttpStatus.NOT_FOUND, "Такого користувача не існує")
         );
         user.setFirstName(profileUpdateRequest.newFirstName());
         user.setLastName(profileUpdateRequest.newLastName());
         user.setPhone(profileUpdateRequest.newPhone());
-        user.setEmail(profileUpdateRequest.newEmail()); //todo validate?
-        return new ProfileResponse(
-                user.getId(),
-                profileUpdateRequest.newFirstName(),
-                profileUpdateRequest.newLastName(),
-                profileUpdateRequest.newPhone(),
-                profileUpdateRequest.newEmail()
-        );
+        user.setEmail(profileUpdateRequest.newEmail());
+        return userMapper.toProfileResponse(user);
     }
 
     @Transactional

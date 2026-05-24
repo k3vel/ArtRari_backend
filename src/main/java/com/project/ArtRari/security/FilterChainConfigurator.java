@@ -45,6 +45,7 @@ public class FilterChainConfigurator {
                                 "/lots/**",
                                 "/artworks/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/websocket/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);

@@ -31,6 +31,7 @@ public class BidService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
+
     private Map<Long,Integer> getAnonymousIds(Long lotId) {
         List<Bid> bids = bidRepository.findByLotIdOrderByCreatedAtDesc(lotId);
         Map<Long, Integer> anonymousIds = new HashMap<>();
@@ -46,21 +47,17 @@ public class BidService {
 
     public List<BidPreviewResponse> getBidPreviews(Long lotId, UserDetailsImpl udi) {
         List<Bid> bids = bidRepository.findByLotIdOrderByCreatedAtDesc(lotId);
-        //Long userId = udi == null ? null : udi.getId();
         Map<Long,Integer> anonymousIds = getAnonymousIds(lotId);
         return bids.stream().map(b -> new BidPreviewResponse(
-                /*
-                b.getUser().getId().equals(userId)
-                        ? "Ви"
-                        : "Невідомий поціновувач мистецтва " + anonymousIds.get(b.getUser().getId()),*/
                 "Невідомий поціновувач мистецтва " + anonymousIds.get(b.getUser().getId()),
                 b.getAmount(),
-                b.getCreatedAt()
+                b.getCreatedAt(),
+                udi != null && b.getUser().getId().equals(udi.getId())
         )).toList();
-    }//todo clean?
+    }
 
     @Transactional
-    public void placeBid(Long lotId, BigDecimal amount, UserDetailsImpl udi) {
+    public BidPreviewResponse placeBid(Long lotId, BigDecimal amount, UserDetailsImpl udi) {
         Lot lot = lotRepository.findByIdForUpdate(lotId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
@@ -77,11 +74,12 @@ public class BidService {
         if (amount.compareTo(lot.getCurrentPrice().add(step)) < 0)
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ставка є замалою.");
 
-        if (Duration.between(Instant.now(), lot.getEndDate()).toMinutes() < 10) {
-            lot.setEndDate(Instant.now().plusSeconds(600));
+        Instant now = Instant.now();
+        if (Duration.between(now, lot.getEndDate()).toMinutes() < 10) {
+            lot.setEndDate(now.plusSeconds(600));
         }
-        if (Duration.between(Instant.now(), auction.getEndDate()).toMinutes() < 10) {
-            auction.setEndDate(Instant.now().plusSeconds(600)); //todo блокировка для аукциона
+        if (Duration.between(now, auction.getEndDate()).toMinutes() < 10) {
+            auction.setEndDate(now.plusSeconds(600)); //todo блокировка для аукциона
         }
 
         lot.setCurrentPrice(amount);
@@ -97,9 +95,17 @@ public class BidService {
         BidPreviewResponse response = new BidPreviewResponse(
                 "Невідомий поціновувач мистецтва " + userId,
                 savedBid.getAmount(),
-                savedBid.getCreatedAt()
+                savedBid.getCreatedAt(),
+                false
         );
-        messagingTemplate.convertAndSend("/topic/lots/" + savedBid.getLot().getId() + "/bids", response);
+        messagingTemplate.convertAndSend("/topic/lots/" + savedBid.getLot().getId() + "/bids", response);//todo ивент паблишер
+
+        return new BidPreviewResponse(
+                "Невідомий поціновувач мистецтва " + userId,
+                savedBid.getAmount(),
+                savedBid.getCreatedAt(),
+                true
+        );
     }
 
 }

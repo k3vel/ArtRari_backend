@@ -2,11 +2,14 @@ package com.project.ArtRari.exhibition;
 
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exhibition.dto.*;
+import com.project.ArtRari.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,41 +19,63 @@ public class ExhibitionController {
     private final ExhibitionService exhibitionService;
 
     @GetMapping
-    public ExhibitionsPageResponse getAll(
+    public ResponseEntity<ExhibitionsPageResponse> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) List<String> tags
     ) {
-        return exhibitionService.getExhibitions(page, tags);
+        return ResponseEntity.ok(exhibitionService.getExhibitions(page, tags));
     }
 
     @GetMapping("/{id}")
-    public ExhibitionResponse getById(@PathVariable Long id) {
-        return exhibitionService.getById(id);
+    public ResponseEntity<ExhibitionResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(exhibitionService.getById(id));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('curator')")
-    public ExhibitionResponse createExhibition(@RequestBody ExhibitionCreateRequest exhibitionCreateRequest) {
-        return exhibitionService.createExhibition(exhibitionCreateRequest);
+    public ResponseEntity<ExhibitionResponse> createExhibition(
+            @RequestBody ExhibitionCreateRequest exhibitionCreateRequest,
+            @AuthenticationPrincipal UserDetailsImpl udi
+    ) {
+        ExhibitionResponse response = exhibitionService.createExhibition(exhibitionCreateRequest, udi);
+        URI uri = URI.create("/exhibitions/" + response.id());
+        return ResponseEntity.created(uri).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('curator')")
-    public ExhibitionResponse updateExhibition(@PathVariable Long id, @RequestBody ExhibitionUpdateRequest exhibitionUpdateRequest) {
-        return exhibitionService.updateExhibition(id, exhibitionUpdateRequest);
+    public ResponseEntity<ExhibitionResponse> updateExhibition(
+            @PathVariable Long id,
+            @RequestBody ExhibitionUpdateRequest exhibitionUpdateRequest,
+            @AuthenticationPrincipal UserDetailsImpl udi
+    ) {
+        ExhibitionResponse response = exhibitionService.updateExhibition(id, exhibitionUpdateRequest, udi);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('curator')")
-    public ResponseEntity<?> deleteExhibition(@PathVariable Long id) {
-        exhibitionService.deleteExhibition(id);
-        return ResponseEntity.ok("Виставку успішно видалено");
+    public ResponseEntity<?> deleteExhibition(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl udi) {
+        exhibitionService.deleteExhibition(id, udi);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('curator')")
-    public PageResponse<ExhibitionPreviewResponse> getMyExhibitions(@RequestParam(defaultValue = "0") int page) {
-        return exhibitionService.getMyExhibitions(page);
+    public ResponseEntity<PageResponse<ExhibitionPreviewResponse>> getMyExhibitions(
+            @RequestParam(defaultValue = "0") int page,
+            @AuthenticationPrincipal UserDetailsImpl udi
+    ) {
+        return ResponseEntity.ok(exhibitionService.getMyExhibitions(page, udi));
+    }
+
+    @GetMapping("/my/{id}")
+    @PreAuthorize("hasRole('curator')")
+    public ResponseEntity<ExhibitionAdvancedResponse> getMyExhibition(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl udi
+            ) {
+        return ResponseEntity.ok(exhibitionService.getMyExhibitionAdvanced(id, udi));
     }
 
 }

@@ -18,7 +18,7 @@ public record ArtworkUpdateRequest(
         String newTechnique,
         @NotNull(message = "Поле Теги є обов'язковим")
         List<Long> newTags,
-        @NotNull(message = "Поле Назва є обов'язковим")
+        @NotNull(message = "Поле Дата створення є обов'язковим")
         @PastOrPresent(message = "Дата створення має бути реальною")
         LocalDate newCreationDate,
         @NotBlank(message = "Поле Зображення є обов'язковим")
