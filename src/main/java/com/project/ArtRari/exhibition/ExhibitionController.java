@@ -3,6 +3,7 @@ package com.project.ArtRari.exhibition;
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exhibition.dto.*;
 import com.project.ArtRari.security.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,7 +35,7 @@ public class ExhibitionController {
     @PostMapping
     @PreAuthorize("hasRole('curator')")
     public ResponseEntity<ExhibitionResponse> createExhibition(
-            @RequestBody ExhibitionCreateRequest exhibitionCreateRequest,
+            @Valid @RequestBody ExhibitionCreateRequest exhibitionCreateRequest,
             @AuthenticationPrincipal UserDetailsImpl udi
     ) {
         ExhibitionResponse response = exhibitionService.createExhibition(exhibitionCreateRequest, udi);
@@ -46,7 +47,7 @@ public class ExhibitionController {
     @PreAuthorize("hasRole('curator')")
     public ResponseEntity<ExhibitionResponse> updateExhibition(
             @PathVariable Long id,
-            @RequestBody ExhibitionUpdateRequest exhibitionUpdateRequest,
+            @Valid @RequestBody ExhibitionUpdateRequest exhibitionUpdateRequest,
             @AuthenticationPrincipal UserDetailsImpl udi
     ) {
         ExhibitionResponse response = exhibitionService.updateExhibition(id, exhibitionUpdateRequest, udi);

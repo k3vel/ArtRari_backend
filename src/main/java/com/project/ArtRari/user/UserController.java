@@ -5,6 +5,7 @@ import com.project.ArtRari.user.dto.PasswordChangeRequest;
 import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
 import com.project.ArtRari.stats.dto.StatsResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +27,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<ProfileResponse> updateProfile(
             @AuthenticationPrincipal UserDetailsImpl udi,
-            @RequestBody ProfileUpdateRequest profileUpdateRequest
+            @Valid @RequestBody ProfileUpdateRequest profileUpdateRequest
     ) {
         ProfileResponse profileResponse = userService.updateProfile(udi, profileUpdateRequest);
         return ResponseEntity.ok(profileResponse);
@@ -35,7 +36,7 @@ public class UserController {
     @PostMapping("/password")
     public ResponseEntity<?> changePassword(
             @AuthenticationPrincipal UserDetailsImpl udi,
-            @RequestBody PasswordChangeRequest passwordChangeRequest
+            @Valid @RequestBody PasswordChangeRequest passwordChangeRequest
     ) {
         userService.changePassword(udi, passwordChangeRequest);
         return ResponseEntity.noContent().build();

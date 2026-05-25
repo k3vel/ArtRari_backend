@@ -3,6 +3,7 @@ package com.project.ArtRari.bid;
 import com.project.ArtRari.bid.dto.BidPlaceRequest;
 import com.project.ArtRari.bid.dto.BidPreviewResponse;
 import com.project.ArtRari.security.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class BidController {
     @PreAuthorize("hasRole('user')")
     public ResponseEntity<BidPreviewResponse> placeBid(
             @PathVariable Long lotId,
-            @RequestBody BidPlaceRequest bidPlaceRequest,
+            @Valid @RequestBody BidPlaceRequest bidPlaceRequest,
             @AuthenticationPrincipal UserDetailsImpl udi
     ) {
         BidPreviewResponse response = bidService.placeBid(lotId, bidPlaceRequest.amount(), udi);

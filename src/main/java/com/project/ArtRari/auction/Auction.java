@@ -2,6 +2,7 @@ package com.project.ArtRari.auction;
 
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.lot.Lot;
+import com.project.ArtRari.lot.LotStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -58,5 +59,11 @@ public class Auction {
         }
         this.lots.clear();
         this.setLots(lots);
+    }
+
+    public void setLotsStatuses(LotStatus status) {
+        for (Lot lot : this.lots) {
+            lot.setStatus(status);
+        }
     }
 }

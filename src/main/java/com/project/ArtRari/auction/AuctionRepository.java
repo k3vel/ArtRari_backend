@@ -18,7 +18,16 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     List<Auction> findByEndDateAfterOrderByStartDateDesc(Instant now);
 
     @EntityGraph(attributePaths = {"exhibition"})
-    Page<Auction> findByStatusOrStatus(AuctionStatus status1, AuctionStatus status2, Pageable pageable );
+    @Query("""
+        SELECT a FROM Auction a 
+        WHERE a.status IN (:status1, :status2) 
+        AND a.endDate > :now""")
+    Page<Auction> findByStatuses(
+            @Param("status1") AuctionStatus status1,
+            @Param("status2") AuctionStatus status2,
+            @Param("now") Instant now,
+            Pageable pageable
+    );
 
     @Query("""
             SELECT DISTINCT a
@@ -27,8 +36,9 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
             JOIN l.artwork AS w
             JOIN w.tags AS t
             WHERE t.name IN :tags
-            AND a.status IN ('active', 'scheduled')""")
-    Page<Auction> findByTags(@Param("tags") List<String> tags, Pageable pageable);
+            AND a.status IN ('active', 'scheduled')
+            AND a.endDate>:now""")
+    Page<Auction> findByTags(@Param("tags") List<String> tags, @Param("now") Instant now, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"lots", "lots.artwork", "lots.artwork.owner", "exhibition"})
@@ -36,19 +46,23 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     boolean existsByExhibitionId(Long exhibitionId);
 
-    @Query(value = """
-            SELECT a.*
-            FROM auction AS a
-            JOIN exhibition AS e ON a.exhibition_id = e.id
-            WHERE a.status='scheduled'::auction_status
-            AND a.start_date<=:now""", nativeQuery = true)
+    @EntityGraph(attributePaths = {"lots", "exhibition"})
+    @Query("""
+           SELECT a FROM Auction a
+           WHERE a.status = 'scheduled'
+           AND a.startDate <= :now""")
     List<Auction> findAuctionsToOpen(@Param("now") Instant now);
 
     @Query(value = """
             SELECT a.*
             FROM auction AS a
             WHERE a.status='active'::auction_status
-            AND a.end_date<=:now""", nativeQuery = true)
+            AND a.end_date<=:now
+            AND NOT EXISTS (
+                            SELECT 1
+                            FROM lot AS l
+                            WHERE l.auction_id=a.id AND l.status='available'::lot_status
+                        )""", nativeQuery = true)
     List<Auction> findAuctionsToClose(@Param("now") Instant now);
 
     Page<Auction> findByExhibitionCuratorId(Long exhibitionCuratorId, Pageable pageable);

@@ -10,5 +10,6 @@ public record LotPreviewResponse(
         BigDecimal currentPrice,
         Instant endDate,
         List<String> tags,
-        String thumbnailUrl
+        String thumbnailUrl,
+        String status
 ) {}

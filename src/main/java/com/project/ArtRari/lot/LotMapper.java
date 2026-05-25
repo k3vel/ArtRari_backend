@@ -39,7 +39,8 @@ public class LotMapper {
                 lot.getCurrentPrice(),
                 lot.getEndDate(),
                 safeArtwork.tags(),
-                safeArtwork.thumbnailUrl()
+                safeArtwork.thumbnailUrl(),
+                lot.getStatus().name()
         );
     }
 }

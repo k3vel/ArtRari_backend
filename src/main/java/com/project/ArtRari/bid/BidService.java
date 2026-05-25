@@ -67,9 +67,12 @@ public class BidService {
         if (sellerId.equals(udi.getId())) {
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ви не можете робити ставку на свій лот.");
         }
-        if (!auction.getStatus().equals(AuctionStatus.active))
-            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Аукціон вже закінчився.");
-        if (!lot.getStatus().equals(LotStatus.available))
+        if (lot.getStatus().equals(LotStatus.scheduled)) {
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Аукціон ще не розпочався");
+        }
+        if (lot.getStatus().equals(LotStatus.sold))
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот вже продано");
+        if (lot.getStatus().equals(LotStatus.unsold) || lot.getStatus().equals(LotStatus.cancelled))
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот не доступний.");
         if (amount.compareTo(lot.getCurrentPrice().add(step)) < 0)
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ставка є замалою.");

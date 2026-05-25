@@ -8,7 +8,7 @@ CREATE TYPE auction_status AS ENUM('scheduled', 'active', 'finished');
 
 CREATE TYPE work_status AS ENUM('available', 'sold');
 
-CREATE TYPE lot_status AS ENUM('available', 'sold', 'unsold', 'cancelled');
+CREATE TYPE lot_status AS ENUM('scheduled', 'available', 'sold', 'unsold', 'cancelled');
 
 CREATE TYPE purchase_status AS ENUM(
   'pending_payment',

@@ -52,9 +52,13 @@ public class AuctionService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
         boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
         if (tagsIsEmpty) {
-            auctions = auctionRepository.findByStatusOrStatus(AuctionStatus.scheduled, AuctionStatus.active, pageable);
+            auctions = auctionRepository.findByStatuses(
+                    AuctionStatus.scheduled,
+                    AuctionStatus.active,
+                    Instant.now(),
+                    pageable);
         } else {
-            auctions = auctionRepository.findByTags(selectedTags, pageable);
+            auctions = auctionRepository.findByTags(selectedTags, Instant.now(), pageable);
         }
         Page<AuctionPreviewResponse> apr = auctions.map(auctionMapper::mapAuctionIntoAuctionPreviewResponse);
         PageResponse<AuctionPreviewResponse> aprs = new PageResponse<>(apr);
@@ -94,10 +98,9 @@ public class AuctionService {
             lot.setArtwork(artwork);
             lot.setCurrentPrice(artwork.getStartPrice());
             lot.setEndDate(request.endDate());
-            lot.setStatus(LotStatus.available);
+            lot.setStatus(LotStatus.scheduled);
             lots.add(lot);
         }
-
         auction.setLots(lots);
         auctionRepository.save(auction);
 
@@ -137,7 +140,7 @@ public class AuctionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ви не можете видаляти аукціон, який проходить або завершений");
         }
-        exhibition.setStatus(ExhibitionStatus.running);
+        exhibition.setStatus(ExhibitionStatus.running); //todo don`t need?
         auctionRepository.delete(auction);
     }
 
@@ -146,6 +149,7 @@ public class AuctionService {
         List<Auction> auctions = auctionRepository.findAuctionsToOpen(Instant.now());
         for (Auction auction : auctions) {
             auction.setStatus(AuctionStatus.active);
+            auction.setLotsStatuses(LotStatus.available);
             Exhibition e = auction.getExhibition();
             e.setStatus(ExhibitionStatus.converted_into_auction);
         }

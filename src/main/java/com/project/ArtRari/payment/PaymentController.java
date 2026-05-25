@@ -2,6 +2,7 @@ package com.project.ArtRari.payment;
 
 import com.project.ArtRari.payment.dto.PaymentRequest;
 import com.project.ArtRari.security.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class PaymentController {
     @PostMapping("/pay/lots/{id}")
     public ResponseEntity<?> payLot(
             @PathVariable Long id,
-            @RequestBody PaymentRequest request,
+            @Valid @RequestBody PaymentRequest request,
             @AuthenticationPrincipal UserDetailsImpl udi) {
         if (udi == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
