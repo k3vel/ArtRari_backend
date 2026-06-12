@@ -65,7 +65,7 @@ public class BidService {
         BigDecimal step = auction.getStep();
         Long sellerId = lot.getArtwork().getOwner().getId();
         if (sellerId.equals(udi.getId())) {
-            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ви не можете робити ставку на свій лот.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ви не можете робити ставку на свій лот");
         }
         if (lot.getStatus().equals(LotStatus.scheduled)) {
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Аукціон ще не розпочався");
@@ -73,11 +73,14 @@ public class BidService {
         if (lot.getStatus().equals(LotStatus.sold))
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот вже продано");
         if (lot.getStatus().equals(LotStatus.unsold) || lot.getStatus().equals(LotStatus.cancelled))
-            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот не доступний.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот вже закрито");
         if (amount.compareTo(lot.getCurrentPrice().add(step)) < 0)
-            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ставка є замалою.");
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Ставка є замалою");
 
         Instant now = Instant.now();
+        if (lot.getEndDate().isBefore(now)) {
+            throw new ArtrariException(HttpStatus.BAD_REQUEST, "Цей лот вже закрито");
+        }
         if (Duration.between(now, lot.getEndDate()).toMinutes() < 10) {
             lot.setEndDate(now.plusSeconds(600));
         }

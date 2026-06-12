@@ -18,7 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -105,7 +104,7 @@ public class ArtworkService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         if (!udi.getId().equals(artwork.getOwner().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ArtrariException(HttpStatus.FORBIDDEN, "Ви не можете видаляти чужу роботу");
         }
         if (lotRepository.existsByArtworkIdAndStatusNot(artwork.getId(), LotStatus.unsold)) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Ви не можете видалити роботу, якщо вона на аукціоні");
