@@ -20,7 +20,7 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @GetMapping
-    public ResponseEntity<AuctionsPageResponse> getAuctions(
+    public ResponseEntity<PageResponse<AuctionPreviewResponse>> getAuctions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) List<String> tags
     ) {

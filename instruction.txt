@@ -4,3 +4,7 @@
 4. docker push k3ve1/artrari-backend:latest
 (5.) docker-compose down -v
 6. docker-compose up -d --build
+
+
+ПОМЕНЯЛ!!!
+1. тэги приходят отдельно

@@ -24,7 +24,7 @@ public class AuctionMapper {
                 auction.getExhibition().getTheme(),
                 auction.getExhibition().getDescription(),
                 auction.getExhibition().getThumbnailUrl(),
-                auction.getStatus(),
+                auction.getStatus().name(),
                 auction.getStartDate(),
                 auction.getEndDate());
     }
@@ -34,6 +34,7 @@ public class AuctionMapper {
         List<LotPreviewResponse> safeLots = lots.stream().map(l -> lotMapper.toLotPreviewResponse(l)).toList();
         return new AuctionResponse(
                 auction.getId(),
+                auction.getExhibition().getTitle(),
                 auction.getExhibition().getTheme(),
                 auction.getExhibition().getDescription(),
                 safeLots,

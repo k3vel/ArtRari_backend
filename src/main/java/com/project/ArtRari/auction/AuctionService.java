@@ -47,7 +47,7 @@ public class AuctionService {
         ).collect(Collectors.toList());
     }
 
-    public AuctionsPageResponse getAuctions(int page, List<String> selectedTags) {
+    public PageResponse<AuctionPreviewResponse> getAuctions(int page, List<String> selectedTags) {
         Page<Auction> auctions;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
         boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
@@ -61,9 +61,7 @@ public class AuctionService {
             auctions = auctionRepository.findByTags(selectedTags, Instant.now(), pageable);
         }
         Page<AuctionPreviewResponse> apr = auctions.map(auctionMapper::mapAuctionIntoAuctionPreviewResponse);
-        PageResponse<AuctionPreviewResponse> aprs = new PageResponse<>(apr);
-        List<String> tags = tagRepository.findAll().stream().map(tag -> tag.getName()).toList();
-        return new AuctionsPageResponse(tags, aprs);
+        return new PageResponse<>(apr);
     }
 
     public AuctionResponse getById(Long id) {
@@ -102,9 +100,9 @@ public class AuctionService {
             lots.add(lot);
         }
         auction.setLots(lots);
-        auctionRepository.save(auction);
+        Auction savedAuction = auctionRepository.save(auction);
 
-        return auctionMapper.mapAuctionIntoAuctionResponse(auction);
+        return auctionMapper.mapAuctionIntoAuctionResponse(savedAuction);
     }
 
     @Transactional
@@ -116,15 +114,19 @@ public class AuctionService {
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        if (auction.getStatus() == AuctionStatus.active || auction.getStatus() == AuctionStatus.finished) {
+        if (auction.getStatus() == AuctionStatus.active) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ви не можете редагувати аукціон, який проходить або завершений");
+                    "Ви не можете редагувати аукціон, що проходить");
+        }
+        if (auction.getStatus() == AuctionStatus.finished) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ви не можете редагувати аукціон, що завершився");
         }
         auction.setStartDate(request.startDate());
         auction.setEndDate(request.endDate());
         auction.setStep(request.step());
-        auctionRepository.save(auction);
-        return auctionMapper.mapAuctionIntoAuctionResponse(auction);
+        Auction savedAuction = auctionRepository.save(auction);
+        return auctionMapper.mapAuctionIntoAuctionResponse(savedAuction);
     }
 
     @Transactional

@@ -53,12 +53,11 @@ public class Auction {
         }
     }
 
-    public void replaceLots(List<Lot> lots) {
-        for (Lot oldLot : this.lots) {
-            oldLot.setAuction(null);
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
+        for (Lot lot : lots) {
+            lot.setEndDate(endDate);
         }
-        this.lots.clear();
-        this.setLots(lots);
     }
 
     public void setLotsStatuses(LotStatus status) {

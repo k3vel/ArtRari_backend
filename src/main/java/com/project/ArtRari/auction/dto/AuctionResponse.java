@@ -8,6 +8,7 @@ import java.util.List;
 
 public record AuctionResponse(
         Long id,
+        String title,
         String theme,
         String description,
         List<LotPreviewResponse> lotPreviews,
