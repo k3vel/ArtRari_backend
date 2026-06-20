@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class ArtworkControllerTest {
+public class ArtworkControllerTestIT {
     @Autowired
     private MockMvc mockMvc;
     @Autowired

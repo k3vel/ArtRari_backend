@@ -26,7 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public AuthResponse signIn(SigninRequest signinRequest) {
-        Authentication authentication = null;
+        Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(signinRequest.email(), signinRequest.password())

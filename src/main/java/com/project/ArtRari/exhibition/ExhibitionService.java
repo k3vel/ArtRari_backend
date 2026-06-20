@@ -51,7 +51,7 @@ public class ExhibitionService {
         return exhibitionMapper.toExhibitionResponse(exhibition);
     }
 
-    public ExhibitionsPageResponse getExhibitions(int page, List<String> selectedTags) {
+    public PageResponse<ExhibitionPreviewResponse> getExhibitions(int page, List<String> selectedTags) {
         Page<Exhibition> exhibitions;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
         boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
@@ -61,9 +61,7 @@ public class ExhibitionService {
             exhibitions = exhibitionRepository.findByTagsAndStatus(selectedTags, ExhibitionStatus.running, pageable);
         }
         Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::toExhibitionPreviewResponse);
-        PageResponse<ExhibitionPreviewResponse> pageResponse = new PageResponse<>(eprs);
-        List<String> tags = tagRepository.findAll().stream().map(tag -> tag.getName()).toList();
-        return new ExhibitionsPageResponse(tags, pageResponse);
+        return new PageResponse<>(eprs);
     }
 
     @Transactional
@@ -82,7 +80,7 @@ public class ExhibitionService {
         try {
             exhibition.setArtworks(artworks);
         } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+            throw new ArtrariException(HttpStatus.CONFLICT, e.getMessage());
         }
         Exhibition savedExhibition = exhibitionRepository.save(exhibition);
         return exhibitionMapper.toExhibitionResponse(savedExhibition);
@@ -100,7 +98,7 @@ public class ExhibitionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         if (exhibition.getStatus() == ExhibitionStatus.converted_into_auction) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
+            throw new ArtrariException(HttpStatus.CONFLICT,
                     "Ви не можете редагувати виставку, яку перетворено на аукціон");
         }
         exhibition.setTitle(exhibitionUpdateRequest.title());
@@ -112,7 +110,7 @@ public class ExhibitionService {
         try {
             exhibition.replaceArtworks(artworks); //artwork.setExhibition(null) уже учел
         } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+            throw new ArtrariException(HttpStatus.CONFLICT, e.getMessage());
         }
         Exhibition savedExhibition = exhibitionRepository.save(exhibition);
         return exhibitionMapper.toExhibitionResponse(savedExhibition);
@@ -127,8 +125,11 @@ public class ExhibitionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         if (exhibition.getStatus() == ExhibitionStatus.converted_into_auction) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
+            throw new ArtrariException(HttpStatus.CONFLICT,
                     "Ви не можете видаляти виставку, яку перетворено на аукціон");
+        }
+        for (Artwork artwork : exhibition.getArtworks()) {
+            artwork.setExhibition(null);
         }
         exhibitionRepository.delete(exhibition);
     }

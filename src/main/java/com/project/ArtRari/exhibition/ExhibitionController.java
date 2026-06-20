@@ -20,7 +20,7 @@ public class ExhibitionController {
     private final ExhibitionService exhibitionService;
 
     @GetMapping
-    public ResponseEntity<ExhibitionsPageResponse> getAll(
+    public ResponseEntity<PageResponse<ExhibitionPreviewResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) List<String> tags
     ) {

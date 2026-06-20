@@ -17,7 +17,7 @@ public class SecurityController {
     private final AuthService authService;
 
     @PostMapping("/signin")
-    ResponseEntity<?> signin(@Valid @RequestBody SigninRequest signinRequest) {
+    ResponseEntity<AuthResponse> signin(@Valid @RequestBody SigninRequest signinRequest) {
         AuthResponse authResponse = authService.signIn(signinRequest);
         return ResponseEntity.ok(authResponse);
     }

@@ -142,7 +142,7 @@ public class AuctionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ви не можете видаляти аукціон, який проходить або завершений");
         }
-        exhibition.setStatus(ExhibitionStatus.running); //todo don`t need?
+        exhibition.setStatus(ExhibitionStatus.running);
         auctionRepository.delete(auction);
     }
 

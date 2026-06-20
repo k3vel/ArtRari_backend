@@ -8,7 +8,6 @@ import com.project.ArtRari.auction.dto.AuctionUpdateRequest;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
 import com.project.ArtRari.exhibition.ExhibitionStatus;
-import com.project.ArtRari.exhibition.dto.ExhibitionResponse;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
@@ -39,10 +38,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest@ActiveProfiles("test")
+@SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class AuctionControllerTest {
+public class AuctionControllerTestIT {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -174,6 +174,9 @@ public class AuctionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Exhibition"))
                 .andExpect(jsonPath("$.lotPreviews[0].title").value("Title"));
+        List<Auction> auctions = auctionRepository.findAll();
+        assertEquals(1, auctions.size());
+        assertEquals("Exhibition", auctions.get(0).getExhibition().getTitle());
     }
 
     @Test

@@ -45,8 +45,6 @@ public class AuctionServiceTest {
     private AuctionMapper auctionMapper;
     @Mock
     private ExhibitionRepository exhibitionRepository;
-    @Mock
-    private TagRepository tagRepository;
 
     @InjectMocks
     private AuctionService auctionService;
