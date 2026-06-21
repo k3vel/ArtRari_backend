@@ -1,4 +1,4 @@
-package com.project.ArtRari.bid;
+package com.project.ArtRari.common;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.artwork.ArtworkRepository;
@@ -6,6 +6,7 @@ import com.project.ArtRari.artwork.WorkStatus;
 import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.auction.AuctionRepository;
 import com.project.ArtRari.auction.AuctionStatus;
+import com.project.ArtRari.bid.BidRepository;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
 import com.project.ArtRari.exhibition.ExhibitionStatus;
@@ -35,7 +36,7 @@ public class TestDataInitializer {
     private final LotRepository lotRepository;
     private final BidRepository bidRepository;
 
-    public Pair<User, UserDetailsImpl> createUser(String unique, Role role) {
+    public Pair<User, UserDetailsImpl> createAndSaveUser(String unique, Role role) {
         User user = new User();
         user.setFirstName("User");
         user.setLastName("Test" + unique);
@@ -50,12 +51,10 @@ public class TestDataInitializer {
         return new Pair<>(user, udi);
     }
 
-    public Lot createAndSaveLot() {
-        Pair<User, UserDetailsImpl> artworkOwner = createUser("owner", Role.user);
-
+    public Artwork createAndSaveArtwork(User owner) {
         Artwork artwork = new Artwork();;
         artwork.setTitle("Title");
-        artwork.setOwner(artworkOwner.a);
+        artwork.setOwner(owner);
         artwork.setDescription("Description");
         artwork.setTechnique("Technique");
         artwork.setStatus(WorkStatus.available);
@@ -64,41 +63,49 @@ public class TestDataInitializer {
         artwork.setCreationDate(LocalDate.now());
         artwork.setPhotoUrl("https://photo.com");
         artwork.setStartPrice(new BigDecimal("1.1"));
-        artworkRepository.save(artwork);
+        return artworkRepository.save(artwork);
+    }
 
-        Pair<User, UserDetailsImpl> curator = createUser("curator", Role.curator);
-
+    public Exhibition createAndSaveExhibition(Artwork artwork, User curator) {
         Exhibition testExhibition = new Exhibition();
         testExhibition.setArtworks(List.of(artwork));
-        testExhibition.setCurator(curator.a);
+        testExhibition.setCurator(curator);
         testExhibition.setTitle("Exhibition");
         testExhibition.setTheme("Theme");
         testExhibition.setDescription("Description");
         testExhibition.setBackgroundUrl("https://photo.com");
         testExhibition.setStartDate(Instant.now());
-        testExhibition.setStatus(ExhibitionStatus.converted_into_auction);
+        testExhibition.setStatus(ExhibitionStatus.running);
         testExhibition.setThumbnailUrl("https://photo.com");
-        exhibitionRepository.save(testExhibition);
+        return exhibitionRepository.save(testExhibition);
+    }
+
+    public Auction createAndSaveAuction(Exhibition exhibition) {
+        exhibition.setStatus(ExhibitionStatus.converted_into_auction);
+        exhibitionRepository.save(exhibition);
 
         Auction testAuction = new Auction();
-        testAuction.setExhibition(testExhibition);
+        testAuction.setExhibition(exhibition);
         Instant now = Instant.now();
         testAuction.setStartDate(now);
         testAuction.setEndDate(now.plusSeconds(600));
         testAuction.setStep(new BigDecimal("1.0"));
         testAuction.setStatus(AuctionStatus.active);
-        Auction savedAuction = auctionRepository.save(testAuction);
+        return auctionRepository.save(testAuction);
+    }
 
+    public Lot createAndSaveLot(Artwork artwork, Auction auction) {
         Lot testLot = new Lot();
         testLot.setArtwork(artwork);
         testLot.setCurrentPrice(new BigDecimal("1.1"));
-        testLot.setEndDate(now.plusSeconds(600));
+        testLot.setEndDate(Instant.now().plusSeconds(500));
         testLot.setBids(List.of());
-        testLot.setAuction(savedAuction);
+        testLot.setAuction(auction);
         testLot.setStatus(LotStatus.available);
-        Lot savedLot = lotRepository.save(testLot);
-
-        Pair<User, UserDetailsImpl> bidder = createUser("bidder", Role.user);
+        auction.getLots().add(testLot);
+        return lotRepository.save(testLot);
+/*
+        Pair<User, UserDetailsImpl> bidder = createAndSaveUser("bidder", Role.user);
         Bid bid1 = new Bid();
         bid1.setUser(bidder.a);
         bid1.setLot(testLot);
@@ -106,8 +113,8 @@ public class TestDataInitializer {
         bid1.setCreatedAt(Instant.now());
         bid1.setWin(false);
         bidRepository.save(bid1);
+*/
 
-        return savedLot;
     }
 
     public void cleanUp() {

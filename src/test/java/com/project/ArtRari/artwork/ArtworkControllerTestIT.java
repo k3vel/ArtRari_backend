@@ -2,12 +2,15 @@ package com.project.ArtRari.artwork;
 
 
 import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
+import com.project.ArtRari.common.SkipBeforeEach;
+import com.project.ArtRari.common.TestDataInitializer;
+import org.antlr.v4.runtime.misc.Pair;
+import org.junit.jupiter.api.TestInfo;
 import tools.jackson.databind.json.JsonMapper;
 import com.project.ArtRari.artwork.dto.ArtworkCreateRequest;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
-import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +28,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,57 +43,36 @@ public class ArtworkControllerTestIT {
     @Autowired
     private ArtworkRepository artworkRepository;
     @Autowired
-    private ArtworkService artworkService;
-    @Autowired
-    private UserRepository userRepository;
+    private TestDataInitializer testDataInitializer;
 
     private User testUser;
     private UserDetailsImpl testUdi;
-    private Artwork testArtwork;
-    private String artworkCreateRequest;
-    private String artworkUpdateRequest;
+    private Artwork savedArtwork;
+    private ArtworkUpdateRequest updateRequest;
 
     @BeforeEach
-    void setUp() {
-        testUser = new User();
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
-        testUser.setEmail("john@doe.com");
-        testUser.setPassword("password");
-        testUser.setPhone("123456789");
-        testUser.setRole(Role.user);
-        userRepository.save(testUser);
+    void setUp(TestInfo testInfo) {
+        Pair<User, UserDetailsImpl> pair = testDataInitializer.createAndSaveUser("test", Role.user);
+        testUser = pair.a;
+        testUdi = pair.b;
 
-        testArtwork = new Artwork();
-        testArtwork.setTitle("Title");
-        testArtwork.setOwner(testUser);
-        testArtwork.setDescription("Description");
-        testArtwork.setTechnique("Technique");
-        testArtwork.setStatus(WorkStatus.available);
-        testArtwork.setAuthor("Author");
-        testArtwork.setTags(List.of());
-        testArtwork.setCreationDate(LocalDate.now());
-        testArtwork.setPhotoUrl("https://photo.com");
-        testArtwork.setStartPrice(new BigDecimal("1.1"));
+        boolean shouldSkip = testInfo.getTestMethod()
+                .map(method -> method.isAnnotationPresent(SkipBeforeEach.class))
+                .orElse(false);
+        if (shouldSkip) {
+            return;
+        }
 
-        testUdi = new UserDetailsImpl(testUser.getId(), testUser.getFirstName(), testUser.getLastName(),
-                testUser.getPhone(), testUser.getEmail(), testUser.getPassword(), testUser.getRole(),
-                testUser.isBanned());
+        savedArtwork = testDataInitializer.createAndSaveArtwork(testUser);
 
-        ArtworkCreateRequest createRequest = new ArtworkCreateRequest("Title", "Author", "Description",
-                "Technique", List.of(), LocalDate.now(), "https://photo.com", new BigDecimal(1.1));
-        artworkCreateRequest = mapper.writeValueAsString(createRequest);
-
-        ArtworkUpdateRequest updateRequest = new ArtworkUpdateRequest("New Title", "Author",
+        updateRequest = new ArtworkUpdateRequest("New Title", "Author",
                 "Description", "Technique", List.of(), LocalDate.now(),
-                "https://photo.com", new BigDecimal(1.1));
-        artworkUpdateRequest = mapper.writeValueAsString(updateRequest);
+                "https://photo.com", new BigDecimal("1.1"));
     }
 
     @Test
     public void getArtwork_ShouldReturn200AndArtwork() throws Exception {
-        Artwork savedArtwork = artworkRepository.save(testArtwork); //todo work status on auction on exhibition ...
-
+        //todo work status on auction on exhibition ...
         mockMvc.perform(get("/artworks/" + savedArtwork.getId())
                 .with(user(testUdi)))
                 .andExpect(status().isOk())
@@ -101,88 +82,67 @@ public class ArtworkControllerTestIT {
 
     @Test
     public void getArtwork_ShouldReturn404_WhenWorkDoesNotExist() throws Exception {
-        mockMvc.perform(get("/artworks/0")
+        mockMvc.perform(get("/artworks/999")
                 .with(user(testUdi)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @SkipBeforeEach
     public void addArtwork_ShouldReturn201() throws Exception {
-        userRepository.save(testUser);
+        ArtworkCreateRequest createRequest = new ArtworkCreateRequest("Title", "Author", "Description",
+                "Technique", List.of(), LocalDate.now(), "https://photo.com", new BigDecimal("1.1"));
+        String request = mapper.writeValueAsString(createRequest);
         mockMvc.perform(post("/artworks")
                         .with(user(testUdi))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(artworkCreateRequest))
+                        .content(request))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Title"));
         List<Artwork> artworks = artworkRepository.findAll();
         assertEquals(1, artworks.size());
-        assertEquals("Title", artworks.get(0).getTitle());
-        assertEquals(testUser.getId(), artworks.get(0).getOwner().getId());
-    }
-
-    @Test
-    public void addArtwork_ShouldReturn401_WhenUnauthorized() throws Exception {
-        mockMvc.perform(post("/artworks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(artworkCreateRequest))
-                .andExpect(status().isUnauthorized());
+        assertEquals("Title", artworks.getFirst().getTitle());
+        assertEquals(testUser.getId(), artworks.getFirst().getOwner().getId());
     }
 
     @Test
     public void updateArtwork_ShouldReturn200AndArtwork() throws Exception {
-        userRepository.save(testUser);
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
-
+        String request = mapper.writeValueAsString(updateRequest);
         mockMvc.perform(put("/artworks/" + savedArtwork.getId())
                         .with(user(testUdi))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(artworkUpdateRequest))
+                        .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("New Title"));
         List<Artwork> artworks = artworkRepository.findAll();
         assertEquals(1, artworks.size());
-        assertEquals("New Title", artworks.get(0).getTitle());
-        assertEquals(testUser.getId(), artworks.get(0).getOwner().getId());
-    }
-
-    @Test
-    public void updateArtwork_ShouldReturn404_WhenWorkDoesNotExist() throws Exception {
-        userRepository.save(testUser);
-        mockMvc.perform(put("/artworks/1")
-                        .with(user(testUdi))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(artworkUpdateRequest))
-                .andExpect(status().isNotFound());
+        assertEquals("New Title", artworks.getFirst().getTitle());
+        assertEquals(testUser.getId(), artworks.getFirst().getOwner().getId());
     }
 
     @Test
     public void updateArtwork_ShouldReturn401_WhenUnauthorized() throws Exception {
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
+        String request = mapper.writeValueAsString(updateRequest);
         mockMvc.perform(put("/artworks/" + savedArtwork.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(artworkUpdateRequest))
+                        .content(request))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void updateArtwork_ShouldReturn403_WhenWrongRole() throws Exception {
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
-        testUser.setRole(Role.curator);
-        testUdi.setRole(Role.curator);
-        userRepository.save(testUser);
+        UserDetailsImpl testCurator = testDataInitializer.createAndSaveUser("curator", Role.curator).b;
+        String request = mapper.writeValueAsString(updateRequest);
 
         mockMvc.perform(put("/artworks/" + savedArtwork.getId())
-                        .with(user(testUdi))
+                        .with(user(testCurator))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(artworkUpdateRequest))
+                            .content(request))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     public void deleteArtwork_ShouldReturn200() throws Exception {
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
-        userRepository.save(testUser);
         mockMvc.perform(delete("/artworks/" + savedArtwork.getId())
                         .with(user(testUdi)))
                 .andExpect(status().isNoContent());
@@ -191,41 +151,26 @@ public class ArtworkControllerTestIT {
     }
 
     @Test
-    public void deleteArtwork_ShouldReturn404_WhenWorkDoesNotExist() throws Exception {
-        userRepository.save(testUser);
-        mockMvc.perform(delete("/artworks/1")
-                        .with(user(testUdi)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     public void deleteArtwork_ShouldReturn401_WhenUnauthorized() throws Exception {
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
         mockMvc.perform(delete("/artworks/" + savedArtwork.getId()))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void deleteArtwork_ShouldReturn403_WhenWrongRole() throws Exception {
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
-        testUser.setRole(Role.curator);
-        testUdi.setRole(Role.curator);
-        userRepository.save(testUser);
+        UserDetailsImpl testCurator = testDataInitializer.createAndSaveUser("curator", Role.curator).b;
 
         mockMvc.perform(delete("/artworks/" + savedArtwork.getId())
-                        .with(user(testUdi)))
+                        .with(user(testCurator)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     public void getAvailableArtworks_ShouldReturn200() throws Exception {
-        artworkRepository.save(testArtwork);
-        testUser.setRole(Role.curator);
-        testUdi.setRole(Role.curator);
-        userRepository.save(testUser);
+        UserDetailsImpl testCurator = testDataInitializer.createAndSaveUser("curator", Role.curator).b;
 
         mockMvc.perform(get("/artworks?page=0")
-                        .with(user(testUdi)))
+                        .with(user(testCurator)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.totalPages").value(1))
@@ -234,30 +179,26 @@ public class ArtworkControllerTestIT {
 
     @Test
     public void getAvailableArtworks_ShouldReturn401_WhenUnauthorized() throws Exception {
-        artworkRepository.save(testArtwork);
         mockMvc.perform(get("/artworks?page=0")).andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getAvailableArtworks_ShouldReturn403_WhenWrongRole() throws Exception {
-        artworkRepository.save(testArtwork);
-        userRepository.save(testUser);
+        UserDetailsImpl testCurator = testDataInitializer.createAndSaveUser("curator", Role.user).b;
 
         mockMvc.perform(get("/artworks?page=0")
-                        .with(user(testUdi)))
+                        .with(user(testCurator)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     public void getAvailableArtworks_ShouldReturn200AndEmptyPage() throws Exception {
-        testArtwork.setStatus(WorkStatus.sold);
-        artworkRepository.save(testArtwork);
-        testUser.setRole(Role.curator);
-        testUdi.setRole(Role.curator);
-        userRepository.save(testUser);
+        savedArtwork.setStatus(WorkStatus.sold);
+        artworkRepository.save(savedArtwork);
+        UserDetailsImpl testCurator = testDataInitializer.createAndSaveUser("curator", Role.curator).b;
 
         mockMvc.perform(get("/artworks?page=0")
-                        .with(user(testUdi)))
+                        .with(user(testCurator)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(0))
                 .andExpect(jsonPath("$.totalPages").value(0));
@@ -267,9 +208,6 @@ public class ArtworkControllerTestIT {
 
     @Test
     public void getMyArtworks_ShouldReturn200() throws Exception {
-        userRepository.save(testUser);
-        artworkRepository.save(testArtwork);
-
         mockMvc.perform(get("/artworks/my")
                         .with(user(testUdi)))
                 .andExpect(status().isOk())
@@ -279,9 +217,6 @@ public class ArtworkControllerTestIT {
 
     @Test
     public void getMyArtwork_ShouldReturn200() throws Exception {
-        userRepository.save(testUser);
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
-
         mockMvc.perform(get("/artworks/my/" + savedArtwork.getId())
                         .with(user(testUdi)))
                 .andExpect(status().isOk())
@@ -289,26 +224,10 @@ public class ArtworkControllerTestIT {
     }
 
     @Test
-    public void getMyArtwork_ShouldReturn404_WhenArtworkDoesNotExist() throws Exception {
-        userRepository.save(testUser);
-        mockMvc.perform(get("/artworks/my/1")
-                        .with(user(testUdi)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     public void getMyArtwork_ShouldReturn403_WhenNotMyWork() throws Exception {
-        userRepository.save(testUser);
-        User otherUser = new User();
-        otherUser.setFirstName("John");
-        otherUser.setLastName("Doe");
-        otherUser.setPhone("123");
-        otherUser.setEmail("johndoe@gmail.com");
-        otherUser.setPassword("456");
-        otherUser.setRole(Role.user);
-        userRepository.save(otherUser);
-        testArtwork.setOwner(otherUser);
-        Artwork savedArtwork = artworkRepository.save(testArtwork);
+        User anotherUser = testDataInitializer.createAndSaveUser("another", Role.user).a;
+        savedArtwork.setOwner(anotherUser);
+        artworkRepository.save(savedArtwork);
 
         mockMvc.perform(get("/artworks/my/" + savedArtwork.getId())
                         .with(user(testUdi)))

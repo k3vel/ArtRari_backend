@@ -37,15 +37,11 @@ public class LotService {
     @Lazy
     private LotService lotService;
 
-    public LotResponse getById(Long id) {
+    public LotResponse getById(Long id, UserDetailsImpl udi) {
         Lot lot = lotRepository.findWithArtworkAndAuctionById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        Long userId = null;
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof UserDetailsImpl udi) {
-            userId = udi.getId();
-        }
+        Long userId = udi == null ? null : udi.getId();
         return lotMapper.toLotResponse(lot, userId);
     }
 
