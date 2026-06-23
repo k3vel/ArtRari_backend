@@ -40,7 +40,6 @@ public class AuthControllerTestIT {
     private SigninRequest signinRequest;
     private SignupRequest signupRequest;
     private User testUser;
-    private UserDetailsImpl testUdi;
 
     @BeforeEach
     void setUp() {

@@ -1,5 +1,6 @@
 package com.project.ArtRari.auth;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record SignupRequest(
@@ -9,6 +10,7 @@ public record SignupRequest(
         String lastName,
         @NotBlank(message = "Поле Телефон є обов'язковим")
         String phone,
+        @Email(message = "Пошта має бути коректною")
         @NotBlank(message = "Поле Пошта є обов'язковим")
         String email,
         @NotBlank(message = "Поле Пароль є обов'язковим")

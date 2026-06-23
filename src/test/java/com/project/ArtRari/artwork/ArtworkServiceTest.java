@@ -114,8 +114,8 @@ public class ArtworkServiceTest {
         PageResponse<ArtworkAdvancedPreviewResponse> response = artworkService.getAvailableArtworks(page);
         assertNotNull(response);
         assertFalse(response.getItems().isEmpty());
-        assertEquals(1L, response.getItems().get(0).id());
-        assertEquals("Mona Lisa", response.getItems().get(0).title());
+        assertEquals(1L, response.getItems().getFirst().id());
+        assertEquals("Mona Lisa", response.getItems().getFirst().title());
     }
 
     @Test
@@ -168,7 +168,7 @@ public class ArtworkServiceTest {
         when(artworkRepository.findById(2L)).thenReturn(Optional.of(someonesArtwork));
         ArtrariException exception = assertThrows(
                 ArtrariException.class,
-                () -> artworkService.updateArtwork(1L, request, udiMock)
+                () -> artworkService.updateArtwork(2L, request, udiMock)
         );
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
     }
@@ -223,7 +223,7 @@ public class ArtworkServiceTest {
         when(artworkRepository.findById(2L)).thenReturn(Optional.of(someonesArtwork));
         ArtrariException exception = assertThrows(
                 ArtrariException.class,
-                () -> artworkService.deleteArtwork(1L, udiMock)
+                () -> artworkService.deleteArtwork(2L, udiMock)
         );
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
     }
@@ -268,8 +268,8 @@ public class ArtworkServiceTest {
         PageResponse<ArtworkPreviewResponse> response = artworkService.getMyArtworks(0, udiMock);
         assertNotNull(response);
         assertFalse(response.getItems().isEmpty());
-        assertEquals(1L, response.getItems().get(0).id());
-        assertEquals("Mona Lisa", response.getItems().get(0).title());
+        assertEquals(1L, response.getItems().getFirst().id());
+        assertEquals("Mona Lisa", response.getItems().getFirst().title());
     }
 
     @Test

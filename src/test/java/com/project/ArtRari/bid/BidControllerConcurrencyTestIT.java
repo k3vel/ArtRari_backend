@@ -1,14 +1,34 @@
 package com.project.ArtRari.bid;
 
+import com.project.ArtRari.artwork.Artwork;
+import com.project.ArtRari.auction.Auction;
+import com.project.ArtRari.bid.dto.BidPlaceRequest;
 import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotRepository;
+import com.project.ArtRari.security.UserDetailsImpl;
+import com.project.ArtRari.user.Role;
+import com.project.ArtRari.user.User;
+import org.antlr.v4.runtime.misc.Pair;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -28,14 +48,15 @@ public class BidControllerConcurrencyTestIT {
     private TestDataInitializer testDataInitializer;
 
     private Lot savedLot;
-/*
+
     @BeforeEach
     public void setUp() {
-        User user = testDataInitializer.createAndSaveUser("user", Role.user).a;
-        Artwork artwork = testDataInitializer.createAndSaveArtwork(user);
-        Exhibition exhibiton = testDataInitializer.createAndSaveExhibition(artwork);
-        Auction auction = testDataInitializer.createAndSaveAuction(exhibiton);
-        savedLot = testDataInitializer.createAndSaveLot(artwork, auction);
+        User owner = testDataInitializer.createAndSaveUser("owner", Role.user).a;
+        Artwork artwork = testDataInitializer.createAndSaveArtwork(owner);
+        User curator = testDataInitializer.createAndSaveUser("curator", Role.admin).a;
+        Exhibition exhibition = testDataInitializer.createAndSaveExhibition(artwork, curator);
+        Auction auction = testDataInitializer.createAndSaveAuction(exhibition);
+        savedLot= testDataInitializer.createAndSaveLot(artwork, auction);
     }
 
     @Test
@@ -124,5 +145,5 @@ public class BidControllerConcurrencyTestIT {
     @AfterEach
     public void tearDown() {
         testDataInitializer.cleanUp();
-    }*/
+    }
 }

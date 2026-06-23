@@ -1,6 +1,9 @@
 package com.project.ArtRari.lot;
 
+import com.project.ArtRari.artwork.Artwork;
+import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
@@ -36,15 +39,20 @@ public class LotControllerTestIT {
         Pair<User, UserDetailsImpl> pair = testDataInitializer.createAndSaveUser("abc", Role.user);
         testUdi = pair.b;
     }
-/*
+
     @Test
     public void getLot_ShouldReturn200() throws Exception {
-        Lot savedLot = testDataInitializer.createAndSaveLot();
+        User owner = testDataInitializer.createAndSaveUser("owner", Role.user).a;
+        Artwork artwork = testDataInitializer.createAndSaveArtwork(owner);
+        User curator = testDataInitializer.createAndSaveUser("curator", Role.curator).a;
+        Exhibition exhibition = testDataInitializer.createAndSaveExhibition(artwork, curator);
+        Auction auction = testDataInitializer.createAndSaveAuction(exhibition);
+        Lot savedLot = testDataInitializer.createAndSaveLot(artwork, auction);
         mockMvc.perform(get("/lots/" + savedLot.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.artwork.title").value("Title"));
     }
-*/
+
     @Test
     public void getLot_ShouldReturn404() throws Exception {
         mockMvc.perform(get("/lots/999")

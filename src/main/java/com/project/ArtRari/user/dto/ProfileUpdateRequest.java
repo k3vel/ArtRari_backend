@@ -1,5 +1,6 @@
 package com.project.ArtRari.user.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record ProfileUpdateRequest(
@@ -9,6 +10,7 @@ public record ProfileUpdateRequest(
         String newLastName,
         @NotBlank(message = "Поле Телефон є обов'язковим")
         String newPhone,
+        @Email(message = "Пошта має бути коректною")
         @NotBlank(message = "Поле Пошта є обов'язковим")
         String newEmail
 ) {}

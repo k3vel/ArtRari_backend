@@ -1,22 +1,13 @@
 package com.project.ArtRari.user;
 
-import com.project.ArtRari.auth.AuthResponse;
-import com.project.ArtRari.auth.SigninRequest;
-import com.project.ArtRari.auth.SignupRequest;
 import com.project.ArtRari.exception.ArtrariException;
-import com.project.ArtRari.security.JwtService;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.dto.PasswordChangeRequest;
 import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;

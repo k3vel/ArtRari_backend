@@ -6,6 +6,7 @@ import com.project.ArtRari.artwork.WorkStatus;
 import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.auction.AuctionRepository;
 import com.project.ArtRari.auction.AuctionStatus;
+import com.project.ArtRari.bid.Bid;
 import com.project.ArtRari.bid.BidRepository;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
@@ -19,6 +20,7 @@ import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -35,6 +37,7 @@ public class TestDataInitializer {
     private final ExhibitionRepository exhibitionRepository;
     private final LotRepository lotRepository;
     private final BidRepository bidRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Pair<User, UserDetailsImpl> createAndSaveUser(String unique, Role role) {
         User user = new User();
@@ -42,7 +45,7 @@ public class TestDataInitializer {
         user.setLastName("Test" + unique);
         user.setEmail(unique + "@gmail.com");
         user.setPhone(unique);
-        user.setPassword("password");
+        user.setPassword(passwordEncoder.encode("password"));
         user.setRole(role);
         user.setBanned(false);
         User savedUser = userRepository.save(user);
@@ -104,17 +107,16 @@ public class TestDataInitializer {
         testLot.setStatus(LotStatus.available);
         auction.getLots().add(testLot);
         return lotRepository.save(testLot);
-/*
-        Pair<User, UserDetailsImpl> bidder = createAndSaveUser("bidder", Role.user);
+    }
+
+    public Bid createAndSaveBid(Lot lot, User bidder) {
         Bid bid1 = new Bid();
-        bid1.setUser(bidder.a);
-        bid1.setLot(testLot);
+        bid1.setUser(bidder);
+        bid1.setLot(lot);
         bid1.setAmount(new BigDecimal("1.1"));
         bid1.setCreatedAt(Instant.now());
         bid1.setWin(false);
-        bidRepository.save(bid1);
-*/
-
+        return bidRepository.save(bid1);
     }
 
     public void cleanUp() {
