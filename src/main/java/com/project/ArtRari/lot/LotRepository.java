@@ -28,4 +28,6 @@ public interface LotRepository extends JpaRepository<Lot, Long> {
     List<Lot> findLotsToClose(@Param("now") Instant now, @Param("status") LotStatus status);
 
     boolean existsByArtworkIdAndStatusNot(Long artworkId, LotStatus status);
+
+    void deleteByArtworkId(Long artworkId);
 }

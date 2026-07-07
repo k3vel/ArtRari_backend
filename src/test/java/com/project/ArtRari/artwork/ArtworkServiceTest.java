@@ -103,7 +103,7 @@ public class ArtworkServiceTest {
         artwork.setTitle("Mona Lisa");
         Page<Artwork> artworkPage = new PageImpl<>(List.of(artwork));
         ArtworkAdvancedPreviewResponse dto = new ArtworkAdvancedPreviewResponse(
-                1L, "Mona Lisa", null, null, null, null, null
+                1L, "Mona Lisa", null, null, null, null, null, "available"
         );
         when(artworkRepository.findByStatusAndExhibitionIsNull(
                 Mockito.eq(WorkStatus.available),

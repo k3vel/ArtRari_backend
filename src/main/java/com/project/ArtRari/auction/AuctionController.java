@@ -22,9 +22,10 @@ public class AuctionController {
     @GetMapping
     public ResponseEntity<PageResponse<AuctionPreviewResponse>> getAuctions(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) List<String> tags
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) String search
     ) {
-        return ResponseEntity.ok(auctionService.getAuctions(page, tags));
+        return ResponseEntity.ok(auctionService.getAuctions(page, tags, search));
     }
 
     @GetMapping("/{id}")

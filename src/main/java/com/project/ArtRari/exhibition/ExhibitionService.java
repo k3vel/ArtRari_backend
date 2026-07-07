@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -51,15 +52,16 @@ public class ExhibitionService {
         return exhibitionMapper.toExhibitionResponse(exhibition);
     }
 
-    public PageResponse<ExhibitionPreviewResponse> getExhibitions(int page, List<String> selectedTags) {
-        Page<Exhibition> exhibitions;
+    public PageResponse<ExhibitionPreviewResponse> getExhibitions(int page, List<String> selectedTags, String search) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
-        boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
-        if (tagsIsEmpty) {
-            exhibitions = exhibitionRepository.findByStatus(ExhibitionStatus.running, pageable);
-        } else {
-            exhibitions = exhibitionRepository.findByTagsAndStatus(selectedTags, ExhibitionStatus.running, pageable);
+        Specification<Exhibition> spec = (table, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        if (search != null && !search.isBlank()) {
+            spec = spec.and(ExhibitionSpecifications.hasText(search));
         }
+        if (selectedTags != null && !selectedTags.isEmpty()) {
+            spec = spec.and(ExhibitionSpecifications.hasTags(selectedTags));
+        }
+        Page<Exhibition> exhibitions = exhibitionRepository.findByStatus(ExhibitionStatus.running, spec, pageable);
         Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::toExhibitionPreviewResponse);
         return new PageResponse<>(eprs);
     }

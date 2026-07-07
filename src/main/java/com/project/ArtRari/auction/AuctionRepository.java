@@ -1,9 +1,12 @@
 package com.project.ArtRari.auction;
 
+import com.project.ArtRari.exhibition.Exhibition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,32 +16,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AuctionRepository extends JpaRepository<Auction, Long> {
+public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpecificationExecutor<Auction> {
     @EntityGraph(attributePaths = {"exhibition"})
     List<Auction> findByEndDateAfterOrderByStartDateDesc(Instant now);
-
-    @EntityGraph(attributePaths = {"exhibition"})
-    @Query("""
-        SELECT a FROM Auction a 
-        WHERE a.status IN (:status1, :status2) 
-        AND a.endDate > :now""")
-    Page<Auction> findByStatuses(
-            @Param("status1") AuctionStatus status1,
-            @Param("status2") AuctionStatus status2,
-            @Param("now") Instant now,
-            Pageable pageable
-    );
-
-    @Query("""
-            SELECT DISTINCT a
-            FROM Auction AS a
-            JOIN a.lots AS l
-            JOIN l.artwork AS w
-            JOIN w.tags AS t
-            WHERE t.name IN :tags
-            AND a.status IN ('active', 'scheduled')
-            AND a.endDate>:now""")
-    Page<Auction> findByTags(@Param("tags") List<String> tags, @Param("now") Instant now, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = {"lots", "lots.artwork", "lots.artwork.owner", "exhibition"})

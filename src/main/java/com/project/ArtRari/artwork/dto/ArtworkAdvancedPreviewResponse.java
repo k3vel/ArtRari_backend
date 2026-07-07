@@ -10,5 +10,6 @@ public record ArtworkAdvancedPreviewResponse(
         List<String> tags,
         String technique,
         BigDecimal startPrice,
-        String thumbnailUrl
+        String thumbnailUrl,
+        String status
 ) {}

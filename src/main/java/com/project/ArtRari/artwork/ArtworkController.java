@@ -56,7 +56,7 @@ public class ArtworkController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('curator', 'admin')")
+    @PreAuthorize("hasRole('curator')")
     public ResponseEntity<PageResponse<ArtworkAdvancedPreviewResponse>> getAvailableArtworks(
             @RequestParam(defaultValue = "0") int page
     ) {

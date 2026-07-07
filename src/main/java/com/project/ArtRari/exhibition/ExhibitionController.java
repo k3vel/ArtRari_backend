@@ -22,9 +22,10 @@ public class ExhibitionController {
     @GetMapping
     public ResponseEntity<PageResponse<ExhibitionPreviewResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(required = false) List<String> tags
+            @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) String search
     ) {
-        return ResponseEntity.ok(exhibitionService.getExhibitions(page, tags));
+        return ResponseEntity.ok(exhibitionService.getExhibitions(page, tags, search));
     }
 
     @GetMapping("/{id}")

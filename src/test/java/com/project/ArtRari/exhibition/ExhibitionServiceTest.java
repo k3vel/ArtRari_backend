@@ -20,11 +20,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.lang.module.ResolutionException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -98,13 +98,13 @@ public class ExhibitionServiceTest {
     }
 
     @Test
-    void getExhibitions_ShouldReturnExhibitions_WhenTagsAreEmpty() {
+    void getExhibitions_ShouldReturnExhibitions_WhenTagsAndSearchAreEmpty() {
         Page<Exhibition> exhibitionPage = new PageImpl<>(List.of(exhibition));
-        when(exhibitionRepository.findByStatus(eq(ExhibitionStatus.running), any(Pageable.class)))
+        when(exhibitionRepository.findByStatus(eq(ExhibitionStatus.running), any(Specification.class), any(Pageable.class)))
                 .thenReturn(exhibitionPage);
         ExhibitionPreviewResponse mockResponse = Mockito.mock(ExhibitionPreviewResponse.class);
         when(exhibitionMapper.toExhibitionPreviewResponse(exhibition)).thenReturn(mockResponse);
-        PageResponse<ExhibitionPreviewResponse> res = exhibitionService.getExhibitions(0, List.of());
+        PageResponse<ExhibitionPreviewResponse> res = exhibitionService.getExhibitions(0, List.of(), "");
 
         assertNotNull(res);
         assertEquals(1, res.getTotalElements());

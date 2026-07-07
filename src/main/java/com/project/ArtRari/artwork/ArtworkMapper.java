@@ -59,7 +59,8 @@ public class ArtworkMapper {
                 safeTags,
                 artwork.getTechnique(),
                 artwork.getStartPrice(),
-                artwork.getPhotoUrl()
+                artwork.getPhotoUrl(),
+                artwork.getStatus().name()
         );
     }
 

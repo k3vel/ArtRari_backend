@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -103,20 +104,16 @@ public class AuctionServiceTest {
     }
 
     @Test
-    void getAuctions_ShouldReturnPage_WhenTagsAreEmpty() {
+    void getAuctions_ShouldReturnPage_WhenTagsAndSearchAreEmpty() {
         Page<Auction> auctionPage = new PageImpl<>(List.of(auction));
-        when(auctionRepository.findByStatuses(
-                eq(AuctionStatus.scheduled),
-                eq(AuctionStatus.active),
-                any(Instant.class),
-                any(Pageable.class))).thenReturn(auctionPage);
+        when(auctionRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(auctionPage);
         AuctionPreviewResponse mockPreview = mock(AuctionPreviewResponse.class);
         when(auctionMapper.mapAuctionIntoAuctionPreviewResponse(auction)).thenReturn(mockPreview);
-        PageResponse<AuctionPreviewResponse> result = auctionService.getAuctions(0, new ArrayList<>());
+        PageResponse<AuctionPreviewResponse> result = auctionService.getAuctions(0, new ArrayList<>(), "");
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        verify(auctionRepository).findByStatuses(any(), any(), any(), any());
+        verify(auctionRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test

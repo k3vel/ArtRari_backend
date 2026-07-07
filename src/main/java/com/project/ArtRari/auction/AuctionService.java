@@ -7,6 +7,7 @@ import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
+import com.project.ArtRari.exhibition.ExhibitionSpecifications;
 import com.project.ArtRari.exhibition.ExhibitionStatus;
 import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.lot.Lot;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -47,19 +49,18 @@ public class AuctionService {
         ).collect(Collectors.toList());
     }
 
-    public PageResponse<AuctionPreviewResponse> getAuctions(int page, List<String> selectedTags) {
-        Page<Auction> auctions;
+    public PageResponse<AuctionPreviewResponse> getAuctions(int page, List<String> selectedTags, String search) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
-        boolean tagsIsEmpty = selectedTags == null || selectedTags.isEmpty();
-        if (tagsIsEmpty) {
-            auctions = auctionRepository.findByStatuses(
-                    AuctionStatus.scheduled,
-                    AuctionStatus.active,
-                    Instant.now(),
-                    pageable);
-        } else {
-            auctions = auctionRepository.findByTags(selectedTags, Instant.now(), pageable);
+        Specification<Auction> spec = (table, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        spec = spec.and(AuctionSpecifications.hasStatuses(List.of(AuctionStatus.scheduled, AuctionStatus.active)))
+                .and(AuctionSpecifications.isNotEnded());
+        if (search != null && !search.isBlank()) {
+            spec = spec.and(AuctionSpecifications.hasText(search));
         }
+        if (selectedTags != null && !selectedTags.isEmpty()) {
+            spec = spec.and(AuctionSpecifications.hasTags(selectedTags));
+        }
+        Page<Auction> auctions = auctionRepository.findAll(spec, pageable);
         Page<AuctionPreviewResponse> apr = auctions.map(auctionMapper::mapAuctionIntoAuctionPreviewResponse);
         return new PageResponse<>(apr);
     }

@@ -109,6 +109,7 @@ public class ArtworkService {
         if (lotRepository.existsByArtworkIdAndStatusNot(artwork.getId(), LotStatus.unsold)) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Ви не можете видалити роботу, якщо вона на аукціоні");
         }
+        lotRepository.deleteByArtworkId(artwork.getId());
         artworkRepository.delete(artwork);
     }
 
