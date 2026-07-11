@@ -1,8 +1,6 @@
 package com.project.ArtRari.auction;
 
 import com.project.ArtRari.artwork.Artwork;
-import com.project.ArtRari.artwork.tag.Tag;
-import com.project.ArtRari.artwork.tag.TagRepository;
 import com.project.ArtRari.auction.dto.*;
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;

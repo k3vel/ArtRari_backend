@@ -1,4 +1,4 @@
-package com.project.ArtRari.image;
+package com.project.ArtRari.config;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.beans.factory.annotation.Value;

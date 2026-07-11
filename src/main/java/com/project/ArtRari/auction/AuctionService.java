@@ -1,28 +1,28 @@
 package com.project.ArtRari.auction;
 
 import com.project.ArtRari.artwork.Artwork;
-import com.project.ArtRari.artwork.tag.TagRepository;
+import com.project.ArtRari.tag.TagRepository;
 import com.project.ArtRari.auction.dto.*;
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.exhibition.ExhibitionRepository;
-import com.project.ArtRari.exhibition.ExhibitionSpecifications;
 import com.project.ArtRari.exhibition.ExhibitionStatus;
-import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotStatus;
 import com.project.ArtRari.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -42,6 +42,7 @@ public class AuctionService {
     @Value("${app.pagination.default-size}")
     private int pageSize;
 
+    @Cacheable("top_auctions")
     public List<AuctionPreviewResponse> getLatestAuctionsPreview() {
         List<Auction> auctions = auctionRepository.findByEndDateAfterOrderByStartDateDesc(Instant.now());
         return auctions.stream().map(
@@ -73,6 +74,7 @@ public class AuctionService {
     }
 
     @Transactional
+    @CacheEvict(value = "top_auctions", allEntries = true)
     public AuctionResponse createAuction(AuctionCreateRequest request, UserDetailsImpl udi) {
         Exhibition exhibition = exhibitionRepository.findByIdAndStatus(request.exhibitionId(), ExhibitionStatus.running)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -107,6 +109,7 @@ public class AuctionService {
     }
 
     @Transactional
+    @CacheEvict(value = "top_auctions", allEntries = true)
     public AuctionResponse updateAuction(Long id, AuctionUpdateRequest request, UserDetailsImpl udi) {
         Auction auction = auctionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -131,6 +134,7 @@ public class AuctionService {
     }
 
     @Transactional
+    @CacheEvict(value = "top_auctions", allEntries = true)
     public void deleteAuction(Long id, UserDetailsImpl udi) {
         Auction auction = auctionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -148,6 +152,10 @@ public class AuctionService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "top_auctions", allEntries = true),
+            @CacheEvict(value = "top_exhibitions", allEntries = true)
+    })
     public void openAuctions() {
         List<Auction> auctions = auctionRepository.findAuctionsToOpen(Instant.now());
         for (Auction auction : auctions) {
@@ -159,6 +167,7 @@ public class AuctionService {
     }
 
     @Transactional
+    @CacheEvict(value = "top_auctions", allEntries = true)
     public void closeAuctions() {
         List<Auction> auctions = auctionRepository.findAuctionsToClose(Instant.now());
         for (Auction auction : auctions) {
@@ -173,4 +182,6 @@ public class AuctionService {
         return new PageResponse<>(eprs);
     }
 
+    @CacheEvict(value = "top_auctions", allEntries = true)
+    public void clearCache() {}
 }

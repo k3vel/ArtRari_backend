@@ -1,5 +1,8 @@
-package com.project.ArtRari.security;
+package com.project.ArtRari.config;
 
+import com.project.ArtRari.security.CustomLogoutHandler;
+import com.project.ArtRari.security.TokenFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FilterChainConfigurator {
     private final TokenFilter tokenFilter;
+    private final CustomLogoutHandler logoutHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,7 +54,15 @@ public class FilterChainConfigurator {
                         .requestMatchers("/websocket","/websocket/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .addLogoutHandler(logoutHandler)
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().flush();
+                        })
+                );
         return http.build();
     }
 }

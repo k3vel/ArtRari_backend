@@ -7,6 +7,7 @@ import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -38,15 +39,15 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public ProfileResponse updateProfile(UserDetailsImpl udi, ProfileUpdateRequest request) {
-        if (!udi.getEmail().equals(request.newEmail()) && userRepository.existsByEmail(request.newEmail())) {
-            throw new ArtrariException(HttpStatus.CONFLICT, "Цей email вже зайнятий");
-        }
-        if (!udi.getPhone().equals(request.newPhone()) && userRepository.existsByPhone(request.newPhone())) {
-            throw new ArtrariException(HttpStatus.CONFLICT, "Цей телефон вже зайнятий");
-        }
         User user = userRepository.findById(udi.getId()).orElseThrow(
                 () -> new ArtrariException(HttpStatus.NOT_FOUND, "Такого користувача не існує")
         );
+        if (!user.getEmail().equals(request.newEmail()) && userRepository.existsByEmail(request.newEmail())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Цей email вже зайнятий");
+        }
+        if (!user.getPhone().equals(request.newPhone()) && userRepository.existsByPhone(request.newPhone())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Цей телефон вже зайнятий");
+        }
         user.setFirstName(request.newFirstName());
         user.setLastName(request.newLastName());
         user.setPhone(request.newPhone());

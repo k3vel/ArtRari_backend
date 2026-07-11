@@ -2,7 +2,7 @@ package com.project.ArtRari.exhibition;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.artwork.ArtworkRepository;
-import com.project.ArtRari.artwork.tag.TagRepository;
+import com.project.ArtRari.tag.TagRepository;
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.exhibition.dto.*;
@@ -12,13 +12,14 @@ import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -38,6 +39,7 @@ public class ExhibitionService {
     @Value("${app.pagination.default-size}")
     private int pageSize;
 
+    @Cacheable("top_exhibitions")
     public List<ExhibitionPreviewResponse> getTop6Preview() {
         List<Exhibition> exhibitions = exhibitionRepository.findTop6ByStatusOrderByIdDesc(ExhibitionStatus.running);
         return exhibitions.stream().map(
@@ -54,19 +56,21 @@ public class ExhibitionService {
 
     public PageResponse<ExhibitionPreviewResponse> getExhibitions(int page, List<String> selectedTags, String search) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
-        Specification<Exhibition> spec = (table, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        Specification<Exhibition> spec = (root, query, cb) ->
+                cb.equal(root.get("status"), ExhibitionStatus.running);
         if (search != null && !search.isBlank()) {
             spec = spec.and(ExhibitionSpecifications.hasText(search));
         }
         if (selectedTags != null && !selectedTags.isEmpty()) {
             spec = spec.and(ExhibitionSpecifications.hasTags(selectedTags));
         }
-        Page<Exhibition> exhibitions = exhibitionRepository.findByStatus(ExhibitionStatus.running, spec, pageable);
+        Page<Exhibition> exhibitions = exhibitionRepository.findAll(spec, pageable);
         Page<ExhibitionPreviewResponse> eprs = exhibitions.map(exhibitionMapper::toExhibitionPreviewResponse);
         return new PageResponse<>(eprs);
     }
 
     @Transactional
+    @CacheEvict(value = "top_exhibitions")
     public ExhibitionResponse createExhibition(ExhibitionCreateRequest exhibitionCreateRequest, UserDetailsImpl udi) {
         User curator = userRepository.getReferenceById(udi.getId());
         Exhibition exhibition = new Exhibition();
@@ -89,6 +93,7 @@ public class ExhibitionService {
     }
 
     @Transactional
+    @CacheEvict(value = "top_exhibitions")
     public ExhibitionResponse updateExhibition(
             Long id,
             ExhibitionUpdateRequest exhibitionUpdateRequest,
@@ -110,7 +115,7 @@ public class ExhibitionService {
         exhibition.setThumbnailUrl(exhibitionUpdateRequest.thumbnailUrl());
         List<Artwork> artworks = artworkRepository.findAllById(exhibitionUpdateRequest.artworkIds());
         try {
-            exhibition.replaceArtworks(artworks); //artwork.setExhibition(null) уже учел
+            exhibition.replaceArtworks(artworks);
         } catch (IllegalStateException e) {
             throw new ArtrariException(HttpStatus.CONFLICT, e.getMessage());
         }
@@ -119,6 +124,7 @@ public class ExhibitionService {
     }
 
     @Transactional
+    @CacheEvict(value = "top_exhibitions")
     public void deleteExhibition(Long id, UserDetailsImpl udi) {
         Exhibition exhibition = exhibitionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)

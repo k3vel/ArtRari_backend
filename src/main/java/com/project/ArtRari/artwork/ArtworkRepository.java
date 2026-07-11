@@ -16,4 +16,5 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long>, JpaSpec
 
     int countAllByOwnerId(Long id);
 
+    List<Artwork> findByTagsId(Long id);
 }

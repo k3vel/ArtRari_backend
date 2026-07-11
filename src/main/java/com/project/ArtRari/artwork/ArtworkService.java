@@ -1,8 +1,8 @@
 package com.project.ArtRari.artwork;
 
 import com.project.ArtRari.artwork.dto.*;
-import com.project.ArtRari.artwork.tag.Tag;
-import com.project.ArtRari.artwork.tag.TagRepository;
+import com.project.ArtRari.tag.Tag;
+import com.project.ArtRari.tag.TagRepository;
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.lot.LotRepository;

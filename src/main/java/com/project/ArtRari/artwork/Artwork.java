@@ -1,7 +1,7 @@
 package com.project.ArtRari.artwork;
 
 import com.project.ArtRari.exhibition.Exhibition;
-import com.project.ArtRari.artwork.tag.Tag;
+import com.project.ArtRari.tag.Tag;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.user.User;
 import jakarta.persistence.*;

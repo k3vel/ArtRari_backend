@@ -25,5 +25,4 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long>, J
     Page<Exhibition> findByCuratorId(Long id, Pageable pageable);
 
     int countAllByCuratorId(Long id);
-
 }

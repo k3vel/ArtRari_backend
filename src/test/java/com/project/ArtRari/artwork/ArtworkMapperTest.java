@@ -4,7 +4,7 @@ import com.project.ArtRari.artwork.dto.ArtworkAdvancedPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkPreviewResponse;
 import com.project.ArtRari.artwork.dto.ArtworkResponse;
 import com.project.ArtRari.artwork.dto.MyArtworkResponse;
-import com.project.ArtRari.artwork.tag.Tag;
+import com.project.ArtRari.tag.Tag;
 import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserMapper;
 import org.junit.jupiter.api.BeforeEach;

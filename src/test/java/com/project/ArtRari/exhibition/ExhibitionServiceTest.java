@@ -101,7 +101,7 @@ public class ExhibitionServiceTest {
     void getExhibitions_ShouldReturnExhibitions_WhenTagsAndSearchAreEmpty() {
         Page<Exhibition> exhibitionPage = new PageImpl<>(List.of(exhibition));
         when(exhibitionRepository.findByStatus(eq(ExhibitionStatus.running), any(Specification.class), any(Pageable.class)))
-                .thenReturn(exhibitionPage);
+                .thenReturn(exhibitionPage);//todo поменял метод
         ExhibitionPreviewResponse mockResponse = Mockito.mock(ExhibitionPreviewResponse.class);
         when(exhibitionMapper.toExhibitionPreviewResponse(exhibition)).thenReturn(mockResponse);
         PageResponse<ExhibitionPreviewResponse> res = exhibitionService.getExhibitions(0, List.of(), "");

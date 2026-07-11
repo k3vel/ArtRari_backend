@@ -1,4 +1,4 @@
-package com.project.ArtRari.artwork.tag;
+package com.project.ArtRari.tag;
 
 import jakarta.persistence.*;
 import lombok.*;

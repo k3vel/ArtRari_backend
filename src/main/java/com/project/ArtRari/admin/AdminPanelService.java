@@ -12,6 +12,7 @@ import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
+import com.project.ArtRari.security.TokenBlacklistService;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
@@ -45,9 +46,12 @@ public class AdminPanelService {
     private final ExhibitionMapper exhibitionMapper;
     private final LotRepository lotRepository;
     private final BidRepository bidRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Value("${app.pagination.default-size}")
     private int pageSize;
+    @Value("${jwt.expirationMs}")
+    private int expirationMs;
 
     public PageResponse<UserPreviewResponse> getAllUsers(String search, int page, UserDetailsImpl udi) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("lastName"));
@@ -80,6 +84,11 @@ public class AdminPanelService {
             throw new ArtrariException(HttpStatus.FORBIDDEN, "Ви не можете банити адміністратора");
         }
         user.setBanned(isBanned);
+        if (isBanned) {
+            tokenBlacklistService.banUser(user.getEmail(), expirationMs);
+        } else {
+            tokenBlacklistService.unbanUser(user.getEmail());
+        }
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.project.ArtRari.bid;
 
 import com.project.ArtRari.auction.Auction;
+import com.project.ArtRari.auction.AuctionService;
 import com.project.ArtRari.auction.AuctionStatus;
 import com.project.ArtRari.bid.dto.BidPreviewResponse;
 import com.project.ArtRari.exception.ArtrariException;
@@ -30,6 +31,7 @@ public class BidService {
     private final LotRepository lotRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final AuctionService auctionService;
 
 
     private Map<Long,Integer> getAnonymousIds(Long lotId) {
@@ -86,6 +88,7 @@ public class BidService {
         }
         if (Duration.between(now, auction.getEndDate()).toMinutes() < 10) {
             auction.setEndDate(now.plusSeconds(600)); //todo блокировка для аукциона
+            auctionService.clearCache();
         }
 
         lot.setCurrentPrice(amount);

@@ -1,4 +1,4 @@
-package com.project.ArtRari.security;
+package com.project.ArtRari.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

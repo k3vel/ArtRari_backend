@@ -2,6 +2,7 @@ package com.project.ArtRari.auction.dto;
 
 import com.project.ArtRari.auction.AuctionStatus;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 public record AuctionPreviewResponse(
@@ -13,5 +14,5 @@ public record AuctionPreviewResponse(
         String status,
         Instant startDate,
         Instant endDate
-) {}
+) implements Serializable {}
 

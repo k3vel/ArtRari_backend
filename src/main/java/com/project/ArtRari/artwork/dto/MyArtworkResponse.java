@@ -1,6 +1,6 @@
 package com.project.ArtRari.artwork.dto;
 
-import com.project.ArtRari.artwork.tag.TagResponse;
+import com.project.ArtRari.tag.TagResponse;
 import com.project.ArtRari.user.dto.UserPreviewResponse;
 
 import java.math.BigDecimal;

@@ -1,5 +1,6 @@
 package com.project.ArtRari.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,30 +25,47 @@ public class JwtService{
 
     public String generateToken(Authentication auth) {
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        return Jwts.builder().setSubject(userDetails.getUsername()).setIssuedAt(new Date())
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .claim("id", userDetails.getId())
+                .claim("role", userDetails.getAuthorities().iterator().next().getAuthority())
+                .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + expirationMs))
                 .signWith(SignatureAlgorithm.HS256,getSecret())
                 .compact();
     }
 
+    private Claims getAllClaimsFromJwt(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSecret())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSecret())
-                    .build()
-                    .parseClaimsJws(token);
+            getAllClaimsFromJwt(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
+    public Long getIdFromJwt(String token) {
+        return getAllClaimsFromJwt(token).get("id", Long.class);
+    }
+
     public String getNameFromJwt(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSecret())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return getAllClaimsFromJwt(token).getSubject();
+    }
+
+    public String getRoleFromJwt(String token) {
+        return getAllClaimsFromJwt(token).get("role", String.class);
+    }
+
+    public long getRemainingTimeFromJwt(String token) {
+        Date expiration = getAllClaimsFromJwt(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
     }
 }
