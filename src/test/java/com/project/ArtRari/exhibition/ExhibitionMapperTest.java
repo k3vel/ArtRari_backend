@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExhibitionMapperTest {
-    private ExhibitionMapper exhibitionMapper;
+    private final ExhibitionMapper exhibitionMapper;
 
     public ExhibitionMapperTest() {
         UserMapper userMapper = new UserMapper();
@@ -27,17 +27,15 @@ public class ExhibitionMapperTest {
     }
 
     private Exhibition exhibition;
-    private Artwork artwork;
-    private User curator;
 
     @BeforeEach
     void setUp() {
-        curator = new User();
+        User curator = new User();
         curator.setId(1L);
         curator.setFirstName("John");
         curator.setLastName("Doe");
 
-        artwork = new Artwork();
+        Artwork artwork = new Artwork();
         artwork.setId(10L);
         artwork.setTitle("Mona Lisa");
         artwork.setAuthor("Author");
@@ -84,8 +82,8 @@ public class ExhibitionMapperTest {
         assertEquals("running", res.status());
 
         assertEquals(1, res.artworks().size());
-        assertEquals(10L, res.artworks().get(0).id());
-        assertEquals("Mona Lisa", res.artworks().get(0).title());
+        assertEquals(10L, res.artworks().getFirst().id());
+        assertEquals("Mona Lisa", res.artworks().getFirst().title());
 
         assertEquals(1L, res.curator().id());
         assertEquals("John", res.curator().firstName());
@@ -104,7 +102,7 @@ public class ExhibitionMapperTest {
         assertEquals("running", res.status());
 
         assertEquals(1, res.artworks().size());
-        assertEquals(10L, res.artworks().get(0).id());
-        assertEquals("Mona Lisa", res.artworks().get(0).title());
+        assertEquals(10L, res.artworks().getFirst().id());
+        assertEquals("Mona Lisa", res.artworks().getFirst().title());
     }
 }

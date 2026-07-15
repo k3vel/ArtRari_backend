@@ -82,7 +82,7 @@ public class AuthControllerTestIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated());
         List<User> users = userRepository.findAll();
         assertEquals(1, users.size());
-        assertEquals("John", users.get(0).getFirstName());
+        assertEquals("John", users.getFirst().getFirstName());
     }
 
     @Test

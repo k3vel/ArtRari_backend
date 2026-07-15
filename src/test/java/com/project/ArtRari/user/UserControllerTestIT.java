@@ -28,14 +28,12 @@ public class UserControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private TestDataInitializer testDataInitializer;
 
-    private User testUser;
     private UserDetailsImpl testUdi;
 
 
     @BeforeEach
     public void setUp() {
         Pair<User, UserDetailsImpl> pair = testDataInitializer.createAndSaveUser("user", Role.user);
-        testUser = pair.a;
         testUdi = pair.b;
     }
 

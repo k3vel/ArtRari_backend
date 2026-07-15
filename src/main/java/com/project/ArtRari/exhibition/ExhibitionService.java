@@ -56,7 +56,7 @@ public class ExhibitionService {
 
     public PageResponse<ExhibitionPreviewResponse> getExhibitions(int page, List<String> selectedTags, String search) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
-        Specification<Exhibition> spec = (root, query, cb) ->
+        Specification<Exhibition> spec = (root, _, cb) ->
                 cb.equal(root.get("status"), ExhibitionStatus.running);
         if (search != null && !search.isBlank()) {
             spec = spec.and(ExhibitionSpecifications.hasText(search));

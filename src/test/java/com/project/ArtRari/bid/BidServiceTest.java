@@ -109,7 +109,7 @@ public class BidServiceTest {
         List<BidPreviewResponse> res = bidService.getBidPreviews(1L, udiMock);
         assertNotNull(res);
         assertEquals(1, res.size());
-        assertEquals(new BigDecimal("10.10"), res.get(0).amount());
+        assertEquals(new BigDecimal("10.10"), res.getFirst().amount());
     }
 
     @Test

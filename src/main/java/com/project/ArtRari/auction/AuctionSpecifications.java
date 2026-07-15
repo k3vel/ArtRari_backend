@@ -19,24 +19,24 @@ public class AuctionSpecifications {
     }
 
     public static Specification<Auction> hasStatuses(List<AuctionStatus> statuses) {
-        return (table, query, criteriaBuilder) ->
+        return (table, _, _) ->
                 table.get("status").in(statuses);
     }
 
     public static Specification<Auction> isNotEnded() {
-        return (table, query, criteriaBuilder) ->
+        return (table, _, criteriaBuilder) ->
                 criteriaBuilder.greaterThan(table.get("endDate"), Instant.now());
     }
 
     public static Specification<Auction> hasText(String search) {
-        return (table, query, criteriaBuilder) -> {
+        return (table, _, criteriaBuilder) -> {
             Join<Object, Object> exhibitionJoin = table.join("exhibition");
             return ExhibitionSpecifications.buildSearchPredicate(exhibitionJoin, criteriaBuilder, search);
         };
     }
 
     public static Specification<Auction> hasTags(List<String> tags) {
-        return (table, query, criteriaBuilder) -> {
+        return (table, query, _) -> {
             query.distinct(true);
             Join<Object, Object> exhibitionJoin = table.join("exhibition");
             Join<Object, Object> artworkExhibitionJoin = exhibitionJoin.join("artworks");

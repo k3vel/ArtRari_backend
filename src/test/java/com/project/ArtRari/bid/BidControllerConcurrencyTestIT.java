@@ -80,7 +80,7 @@ public class BidControllerConcurrencyTestIT extends AbstractIntegrationTest {
                                 .with(user(bidder1.b))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json));
-                    } catch (Exception e) {
+                    } catch (Exception _) {
 
                     } finally {
                         endLatch.countDown();

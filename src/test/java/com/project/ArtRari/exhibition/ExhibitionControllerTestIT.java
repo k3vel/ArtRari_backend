@@ -36,7 +36,6 @@ public class ExhibitionControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private TestDataInitializer testDataInitializer;
 
-    private User testUser;
     private UserDetailsImpl testUdi;
     private Artwork testArtwork;
     private Exhibition savedExhibition;
@@ -44,7 +43,7 @@ public class ExhibitionControllerTestIT extends AbstractIntegrationTest {
     @BeforeEach
     public void setUp(TestInfo testInfo) {
         Pair<User,UserDetailsImpl> pair = testDataInitializer.createAndSaveUser("test", Role.curator);
-        testUser = pair.a;
+        User testUser = pair.a;
         testUdi = pair.b;
 
         boolean shouldSkip = testInfo.getTestMethod()

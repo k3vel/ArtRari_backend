@@ -49,10 +49,8 @@ public class AuctionServiceTest {
     private AuctionService auctionService;
 
     private UserDetailsImpl testUdi;
-    private User curator;
     private Exhibition exhibition;
     private Auction auction;
-    private Artwork artwork;
 
     @BeforeEach
     void setUp() {
@@ -61,10 +59,10 @@ public class AuctionServiceTest {
         testUdi = new UserDetailsImpl(1L, "John", "Doe", "mail", "pass",
                 "123", Role.curator, false);
 
-        curator = new User();
+        User curator = new User();
         curator.setId(1L);
 
-        artwork = new Artwork();
+        Artwork artwork = new Artwork();
         artwork.setId(10L);
         artwork.setStartPrice(new BigDecimal("100.00"));
 
@@ -138,8 +136,8 @@ public class AuctionServiceTest {
         assertEquals(AuctionStatus.scheduled, savedAuction.getStatus());
         assertEquals(new BigDecimal("50.00"), savedAuction.getStep());
         assertEquals(1, savedAuction.getLots().size());
-        assertEquals(LotStatus.scheduled, savedAuction.getLots().get(0).getStatus());
-        assertEquals(new BigDecimal("100.00"), savedAuction.getLots().get(0).getCurrentPrice());
+        assertEquals(LotStatus.scheduled, savedAuction.getLots().getFirst().getStatus());
+        assertEquals(new BigDecimal("100.00"), savedAuction.getLots().getFirst().getCurrentPrice());
     }
 
     @Test

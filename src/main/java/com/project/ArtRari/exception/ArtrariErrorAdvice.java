@@ -28,9 +28,7 @@ public class ArtrariErrorAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> argumentNotValid(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
-        e.getBindingResult().getFieldErrors().forEach(error -> {
-            errors.put(error.getField(), error.getDefaultMessage());
-        });
+        e.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
         MethodArgumentNotValidErrorResponse errorResponse = new MethodArgumentNotValidErrorResponse(
                 400,
                 "BAD_REQUEST",

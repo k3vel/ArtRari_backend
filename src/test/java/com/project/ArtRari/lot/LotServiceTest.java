@@ -11,7 +11,6 @@ import com.project.ArtRari.purchase.PurchaseRepository;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -133,7 +131,7 @@ public class LotServiceTest {
     @Test
     void closeLot_ShouldThrowNoSuchElement_WhenLotNotFound() {
         when(lotRepository.findByIdForUpdate(1L)).thenReturn(Optional.empty());
-        NoSuchElementException ex = assertThrows(
+        assertThrows(
                 NoSuchElementException.class,
                 () -> lotService.closeLot(1L)
         );

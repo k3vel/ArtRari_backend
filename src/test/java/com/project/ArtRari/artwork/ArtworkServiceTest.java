@@ -259,7 +259,6 @@ public class ArtworkServiceTest {
     @Test
     void getMyArtworks_ShouldReturnPageResponse() {
         ReflectionTestUtils.setField(artworkService, "pageSize", 10);
-        int page = 0;
         Artwork artwork = new Artwork();
         artwork.setId(1L);
         artwork.setTitle("Mona Lisa");

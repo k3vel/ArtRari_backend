@@ -1,7 +1,6 @@
 package com.project.ArtRari.auction;
 
 import com.project.ArtRari.artwork.Artwork;
-import com.project.ArtRari.tag.TagRepository;
 import com.project.ArtRari.auction.dto.*;
 import com.project.ArtRari.common.PageResponse;
 import com.project.ArtRari.exception.ArtrariException;
@@ -39,7 +38,6 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final AuctionMapper auctionMapper;
     private final ExhibitionRepository exhibitionRepository;
-    private final TagRepository tagRepository;
 
     @Value("${app.pagination.default-size}")
     private int pageSize;

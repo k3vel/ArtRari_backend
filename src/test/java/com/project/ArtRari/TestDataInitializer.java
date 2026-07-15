@@ -55,7 +55,7 @@ public class TestDataInitializer {
     }
 
     public Artwork createAndSaveArtwork(User owner) {
-        Artwork artwork = new Artwork();;
+        Artwork artwork = new Artwork();
         artwork.setTitle("Title");
         artwork.setOwner(owner);
         artwork.setDescription("Description");

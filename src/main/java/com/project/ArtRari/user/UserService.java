@@ -7,7 +7,6 @@ import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

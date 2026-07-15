@@ -2,7 +2,6 @@ package com.project.ArtRari.bid;
 
 import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.auction.AuctionService;
-import com.project.ArtRari.auction.AuctionStatus;
 import com.project.ArtRari.bid.dto.BidPlacedEvent;
 import com.project.ArtRari.bid.dto.BidPreviewResponse;
 import com.project.ArtRari.exception.ArtrariException;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

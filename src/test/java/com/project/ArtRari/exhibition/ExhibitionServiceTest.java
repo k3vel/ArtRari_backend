@@ -134,7 +134,7 @@ public class ExhibitionServiceTest {
         verify(exhibitionRepository).save(saved.capture());
         Exhibition exhibition = saved.getValue();
         assertEquals("Exhibition", exhibition.getTitle());
-        assertEquals("Mona Lisa", exhibition.getArtworks().get(0).getTitle());
+        assertEquals("Mona Lisa", exhibition.getArtworks().getFirst().getTitle());
     }
 
     @Test
@@ -167,7 +167,7 @@ public class ExhibitionServiceTest {
         verify(exhibitionRepository).save(saved.capture());
         Exhibition exhibition = saved.getValue();
         assertEquals("New title", exhibition.getTitle());
-        assertEquals(new BigDecimal("100.00"), exhibition.getArtworks().get(0).getStartPrice());
+        assertEquals(new BigDecimal("100.00"), exhibition.getArtworks().getFirst().getStartPrice());
     }
 
     @Test
