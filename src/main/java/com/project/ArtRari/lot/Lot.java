@@ -41,4 +41,7 @@ public class Lot {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private LotStatus status;
+
+    @Version
+    private Long version;
 }

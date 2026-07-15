@@ -1,9 +1,7 @@
 package com.project.ArtRari.auction;
 
-import com.project.ArtRari.exhibition.Exhibition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -20,18 +18,17 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
     @EntityGraph(attributePaths = {"exhibition"})
     List<Auction> findByEndDateAfterOrderByStartDateDesc(Instant now);
 
-    @Override
     @EntityGraph(attributePaths = {"lots", "lots.artwork", "lots.artwork.owner", "exhibition"})
-    Optional<Auction> findById(Long id);
+    Optional<Auction> findWithLotsAndExhibitionById(Long id);
 
     boolean existsByExhibitionId(Long exhibitionId);
 
     @EntityGraph(attributePaths = {"lots", "exhibition"})
     @Query("""
            SELECT a FROM Auction a
-           WHERE a.status = 'scheduled'
+           WHERE a.status = :status
            AND a.startDate <= :now""")
-    List<Auction> findAuctionsToOpen(@Param("now") Instant now);
+    List<Auction> findAuctionsToOpen(@Param("status") AuctionStatus status, @Param("now") Instant now);
 
     @Query(value = """
             SELECT a.*

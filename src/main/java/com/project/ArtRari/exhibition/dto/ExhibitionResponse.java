@@ -15,5 +15,6 @@ public record ExhibitionResponse(
         String backgroundUrl,
         UserPreviewResponse curator,
         Instant startDate,
-        String status
+        String status,
+        Long version
 ) {}

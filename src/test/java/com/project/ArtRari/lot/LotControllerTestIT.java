@@ -1,20 +1,17 @@
 package com.project.ArtRari.lot;
 
+import com.project.ArtRari.AbstractIntegrationTest;
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.auction.Auction;
-import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.TestDataInitializer;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
-import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -22,11 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@Transactional
-public class LotControllerTestIT {
+public class LotControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired

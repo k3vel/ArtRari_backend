@@ -26,6 +26,7 @@ public class LotMapper {
                 lot.getAuction().getStep(),
                 lot.getEndDate(),
                 lot.getStatus().name(),
+                lot.getVersion(),
                 isMyLot
         );
     }

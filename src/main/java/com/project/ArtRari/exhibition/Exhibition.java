@@ -46,6 +46,9 @@ public class Exhibition {
     @Column(name = "thumbnail_url")
     private String thumbnailUrl;
 
+    @Version
+    private Long version;
+
     public void setArtworks(List<Artwork> artworks) {
         if (artworks == null) return;
         for (Artwork artwork : artworks) {

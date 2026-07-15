@@ -16,5 +16,6 @@ public record ArtworkResponse(
         List<String> tags,
         LocalDate creationDate,
         String photoUrl,
-        String status
+        String status,
+        Long version
 ) {}

@@ -38,6 +38,8 @@ services:
       CLOUDINARY_URL: ${CLOUDINARY_URL}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+
 
 volumes:
   pgdata:

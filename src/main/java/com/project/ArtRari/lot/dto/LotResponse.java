@@ -13,5 +13,6 @@ public record LotResponse(
    BigDecimal step,
    Instant endDate,
    String status,
+   Long version,
    boolean isMyLot
 ) {}

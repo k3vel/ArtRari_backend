@@ -41,7 +41,8 @@ public class AuctionMapper {
                 auction.getStartDate(),
                 auction.getEndDate(),
                 userMapper.toUserPreviewResponse(auction.getExhibition().getCurator()),
-                auction.getStatus().name()
+                auction.getStatus().name(),
+                auction.getVersion()
         );
     }
 }

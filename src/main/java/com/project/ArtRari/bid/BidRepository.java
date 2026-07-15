@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BidRepository extends JpaRepository<Bid, Integer> {
+public interface BidRepository extends JpaRepository<Bid, Long> {
     @EntityGraph(attributePaths = {"lot", "lot.auction"})
     Optional<Bid> findWithLotAndAuctionById(Long id);
 

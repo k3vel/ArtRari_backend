@@ -65,7 +65,7 @@ public class LotServiceTest {
         Artwork artwork = new Artwork();
         artwork.setExhibition(new Exhibition());
         lotMock.setArtwork(artwork);
-
+        lotMock.setStatus(LotStatus.available);
     }
 
     @Test

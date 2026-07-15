@@ -34,7 +34,8 @@ public class ArtworkMapper {
                 safeTags,
                 artwork.getCreationDate(),
                 artwork.getPhotoUrl(),
-                artwork.getStatus().name()
+                artwork.getStatus().name(),
+                artwork.getVersion()
         );
     }
 

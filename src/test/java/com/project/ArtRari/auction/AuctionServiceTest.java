@@ -80,22 +80,23 @@ public class AuctionServiceTest {
         auction.setStatus(AuctionStatus.scheduled);
         auction.setStartDate(Instant.now().plus(1, ChronoUnit.DAYS));
         auction.setEndDate(Instant.now().plus(2, ChronoUnit.DAYS));
+        auction.setVersion(0L);
     }
 
     @Test
     void getById_ShouldReturnAuction() {
-        when(auctionRepository.findById(1000L)).thenReturn(Optional.of(auction));
+        when(auctionRepository.findWithLotsAndExhibitionById(1000L)).thenReturn(Optional.of(auction));
         AuctionResponse mockResponse = mock(AuctionResponse.class);
         when(auctionMapper.mapAuctionIntoAuctionResponse(auction)).thenReturn(mockResponse);
         AuctionResponse result = auctionService.getById(1000L);
 
         assertNotNull(result);
-        verify(auctionRepository).findById(1000L);
+        verify(auctionRepository).findWithLotsAndExhibitionById(1000L);
     }
 
     @Test
     void getById_ShouldThrow404_WhenNotFound() {
-        when(auctionRepository.findById(1000L)).thenReturn(Optional.empty());
+        when(auctionRepository.findWithLotsAndExhibitionById(1000L)).thenReturn(Optional.empty());
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> auctionService.getById(1000L));
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
@@ -174,8 +175,8 @@ public class AuctionServiceTest {
     @Test
     void updateAuction_ShouldThrowConflict_WhenAuctionIsActive() {
         auction.setStatus(AuctionStatus.active);
-        when(auctionRepository.findById(1000L)).thenReturn(Optional.of(auction));
-        AuctionUpdateRequest request = new AuctionUpdateRequest(Instant.now(), Instant.now(), new BigDecimal("10.0"));
+        when(auctionRepository.findWithLotsAndExhibitionById(1000L)).thenReturn(Optional.of(auction));
+        AuctionUpdateRequest request = new AuctionUpdateRequest(Instant.now(), Instant.now(), new BigDecimal("10.0"), 0L);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> auctionService.updateAuction(1000L, request, testUdi));
@@ -186,8 +187,8 @@ public class AuctionServiceTest {
     void updateAuction_ShouldUpdateAndSave_WhenValidRequest() {
         Instant newStart = Instant.now().plus(5, ChronoUnit.DAYS);
         Instant newEnd = Instant.now().plus(10, ChronoUnit.DAYS);
-        AuctionUpdateRequest request = new AuctionUpdateRequest(newStart, newEnd, new BigDecimal("75.00"));
-        when(auctionRepository.findById(1000L)).thenReturn(Optional.of(auction));
+        AuctionUpdateRequest request = new AuctionUpdateRequest(newStart, newEnd, new BigDecimal("75.00"), 0L);
+        when(auctionRepository.findWithLotsAndExhibitionById(1000L)).thenReturn(Optional.of(auction));
         when(auctionRepository.save(any(Auction.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
         AuctionResponse mockResponse = mock(AuctionResponse.class);
@@ -208,8 +209,8 @@ public class AuctionServiceTest {
     void updateAuction_ShouldThrowForbidden_WhenWrongCurator() {
         UserDetailsImpl wrongUdi = new UserDetailsImpl(99L, "Bad", "Guy", "mail",
                 "pass", "123", Role.curator, false);
-        AuctionUpdateRequest request = new AuctionUpdateRequest(Instant.now(), Instant.now(), new BigDecimal("10.0"));
-        when(auctionRepository.findById(1000L)).thenReturn(Optional.of(auction));
+        AuctionUpdateRequest request = new AuctionUpdateRequest(Instant.now(), Instant.now(), new BigDecimal("10.0"), 0L);
+        when(auctionRepository.findWithLotsAndExhibitionById(1000L)).thenReturn(Optional.of(auction));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class,
                 () -> auctionService.updateAuction(1000L, request, wrongUdi));
@@ -219,7 +220,7 @@ public class AuctionServiceTest {
 
     @Test
     void deleteAuction_ShouldDelete() {
-        when(auctionRepository.findById(1000L)).thenReturn(Optional.of(auction));
+        when(auctionRepository.findWithLotsAndExhibitionById(1000L)).thenReturn(Optional.of(auction));
         auctionService.deleteAuction(1000L, testUdi);
 
         verify(auctionRepository).delete(auction);
@@ -228,7 +229,8 @@ public class AuctionServiceTest {
 
     @Test
     void openAuctions_ShouldUpdateStatuses() {
-        when(auctionRepository.findAuctionsToOpen(any(Instant.class))).thenReturn(List.of(auction));
+        when(auctionRepository.findAuctionsToOpen(eq(AuctionStatus.scheduled), any(Instant.class)))
+                .thenReturn(List.of(auction));
         auctionService.openAuctions();
 
         assertEquals(AuctionStatus.active, auction.getStatus());

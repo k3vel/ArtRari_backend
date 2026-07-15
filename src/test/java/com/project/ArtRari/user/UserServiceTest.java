@@ -43,6 +43,7 @@ public class UserServiceTest {
         testUser.setEmail("test@gmail.com");
         testUser.setPhone("123456789");
         testUser.setPassword("encodedOldPassword");
+        testUser.setVersion(0L);
 
         udiMock = new UserDetailsImpl(1L, "John", "Doe", "john", "test@gmail.com",
                 "encodedOldPassword", Role.user, false);
@@ -76,7 +77,7 @@ public class UserServiceTest {
     @Test
     void updateProfile_ShouldSucceed() {
         ProfileUpdateRequest request = new ProfileUpdateRequest("NewFirst", "NewLast",
-                "987654321", "new@gmail.com");
+                "987654321", "new@gmail.com", 0L);
         when(userRepository.existsByEmail("new@gmail.com")).thenReturn(false);
         when(userRepository.existsByPhone("987654321")).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -92,7 +93,8 @@ public class UserServiceTest {
     @Test
     void updateProfile_ShouldThrowConflict_WhenEmailExists() {
         ProfileUpdateRequest request = new ProfileUpdateRequest("First", "Last",
-                "123456789", "busy@gmail.com");
+                "123456789", "busy@gmail.com", 0L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(userRepository.existsByEmail("busy@gmail.com")).thenReturn(true);
 
         ArtrariException ex = assertThrows(ArtrariException.class, () -> userService.updateProfile(udiMock, request));

@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.jpa.domain.Specification.where;
+
 @Service
 @RequiredArgsConstructor
 public class AuctionService {
@@ -52,7 +54,7 @@ public class AuctionService {
 
     public PageResponse<AuctionPreviewResponse> getAuctions(int page, List<String> selectedTags, String search) {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("startDate").descending());
-        Specification<Auction> spec = (table, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+        Specification<Auction> spec = where(AuctionSpecifications.fetchExhibition());
         spec = spec.and(AuctionSpecifications.hasStatuses(List.of(AuctionStatus.scheduled, AuctionStatus.active)))
                 .and(AuctionSpecifications.isNotEnded());
         if (search != null && !search.isBlank()) {
@@ -67,7 +69,7 @@ public class AuctionService {
     }
 
     public AuctionResponse getById(Long id) {
-        Auction auction = auctionRepository.findById(id).orElseThrow(
+        Auction auction = auctionRepository.findWithLotsAndExhibitionById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         return auctionMapper.mapAuctionIntoAuctionResponse(auction);
@@ -111,9 +113,12 @@ public class AuctionService {
     @Transactional
     @CacheEvict(value = "top_auctions", allEntries = true)
     public AuctionResponse updateAuction(Long id, AuctionUpdateRequest request, UserDetailsImpl udi) {
-        Auction auction = auctionRepository.findById(id).orElseThrow(
+        Auction auction = auctionRepository.findWithLotsAndExhibitionById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
+        if (!auction.getVersion().equals(request.version())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Дані було змінено. Будь-ласка, оновіть сторінку");
+        }
         Exhibition exhibition = auction.getExhibition();
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -127,7 +132,7 @@ public class AuctionService {
                     "Ви не можете редагувати аукціон, що завершився");
         }
         auction.setStartDate(request.startDate());
-        auction.setEndDate(request.endDate());
+        auction.setEndDate(request.endDate()); //лоты учтены
         auction.setStep(request.step());
         Auction savedAuction = auctionRepository.save(auction);
         return auctionMapper.mapAuctionIntoAuctionResponse(savedAuction);
@@ -136,7 +141,7 @@ public class AuctionService {
     @Transactional
     @CacheEvict(value = "top_auctions", allEntries = true)
     public void deleteAuction(Long id, UserDetailsImpl udi) {
-        Auction auction = auctionRepository.findById(id).orElseThrow(
+        Auction auction = auctionRepository.findWithLotsAndExhibitionById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         Exhibition exhibition = auction.getExhibition();
@@ -147,7 +152,7 @@ public class AuctionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Ви не можете видаляти аукціон, який проходить або завершений");
         }
-        exhibition.setStatus(ExhibitionStatus.running);
+        exhibition.setStatus(ExhibitionStatus.running); //лоты удаляются каскадно, статус работ available как и был
         auctionRepository.delete(auction);
     }
 
@@ -157,7 +162,7 @@ public class AuctionService {
             @CacheEvict(value = "top_exhibitions", allEntries = true)
     })
     public void openAuctions() {
-        List<Auction> auctions = auctionRepository.findAuctionsToOpen(Instant.now());
+        List<Auction> auctions = auctionRepository.findAuctionsToOpen(AuctionStatus.scheduled, Instant.now());
         for (Auction auction : auctions) {
             auction.setStatus(AuctionStatus.active);
             auction.setLotsStatuses(LotStatus.available);

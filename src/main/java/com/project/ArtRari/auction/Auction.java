@@ -5,11 +5,8 @@ import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.flywaydb.core.Flyway;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -44,6 +41,9 @@ public class Auction {
 
     @Column(name = "end_date")
     private Instant endDate;
+
+    @Version
+    private Long version;
 
     public void setLots(List<Lot> lots) {
         if (lots == null) return;

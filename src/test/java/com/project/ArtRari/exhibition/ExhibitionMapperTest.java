@@ -2,6 +2,7 @@ package com.project.ArtRari.exhibition;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.artwork.ArtworkMapper;
+import com.project.ArtRari.artwork.WorkStatus;
 import com.project.ArtRari.exhibition.dto.ExhibitionAdvancedResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionPreviewResponse;
 import com.project.ArtRari.exhibition.dto.ExhibitionResponse;
@@ -44,6 +45,7 @@ public class ExhibitionMapperTest {
         artwork.setTags(List.of());
         artwork.setStartPrice(new BigDecimal("100.00"));
         artwork.setPhotoUrl("http://photo.com");
+        artwork.setStatus(WorkStatus.available);
 
         exhibition = new Exhibition();
         exhibition.setId(100L);

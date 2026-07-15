@@ -1,9 +1,10 @@
 package com.project.ArtRari.bid;
 
+import com.project.ArtRari.AbstractIntegrationTest;
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.auction.Auction;
 import com.project.ArtRari.bid.dto.BidPlaceRequest;
-import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.TestDataInitializer;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotRepository;
@@ -15,12 +16,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
@@ -34,10 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-public class BidControllerConcurrencyTestIT {
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
+public class BidControllerConcurrencyTestIT extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired

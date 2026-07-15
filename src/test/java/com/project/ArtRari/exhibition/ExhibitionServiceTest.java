@@ -72,6 +72,7 @@ public class ExhibitionServiceTest {
         exhibition.setCurator(testUser);
         exhibition.setStatus(ExhibitionStatus.running);
         exhibition.setArtworks(List.of(artwork));
+        exhibition.setVersion(0L);
     }
 
     @Test
@@ -100,8 +101,7 @@ public class ExhibitionServiceTest {
     @Test
     void getExhibitions_ShouldReturnExhibitions_WhenTagsAndSearchAreEmpty() {
         Page<Exhibition> exhibitionPage = new PageImpl<>(List.of(exhibition));
-        when(exhibitionRepository.findByStatus(eq(ExhibitionStatus.running), any(Specification.class), any(Pageable.class)))
-                .thenReturn(exhibitionPage);//todo поменял метод
+        when(exhibitionRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(exhibitionPage);
         ExhibitionPreviewResponse mockResponse = Mockito.mock(ExhibitionPreviewResponse.class);
         when(exhibitionMapper.toExhibitionPreviewResponse(exhibition)).thenReturn(mockResponse);
         PageResponse<ExhibitionPreviewResponse> res = exhibitionService.getExhibitions(0, List.of(), "");
@@ -153,7 +153,7 @@ public class ExhibitionServiceTest {
     @Test
     void updateExhibition_ShouldUpdate() {
         ExhibitionUpdateRequest request = new ExhibitionUpdateRequest(List.of(10L), "New title", "Theme",
-                "Description", "http://photo.com", "http://photo.com");
+                "Description", "http://photo.com", "http://photo.com", 0L);
         when(exhibitionRepository.findById(100L)).thenReturn(Optional.of(exhibition));
         when(artworkRepository.findAllById(List.of(10L))).thenReturn(List.of(artwork));
         when(exhibitionRepository.save(any(Exhibition.class))).thenAnswer(invocation ->
@@ -173,7 +173,7 @@ public class ExhibitionServiceTest {
     @Test
     void updateExhibition_ShouldThrow404_WhenNotFound() {
         ExhibitionUpdateRequest request = new ExhibitionUpdateRequest(List.of(10L), "New title", "Theme",
-                "Description", "http://photo.com", "http://photo.com");
+                "Description", "http://photo.com", "http://photo.com", 0L);
         when(exhibitionRepository.findById(100L)).thenReturn(Optional.empty());
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
@@ -185,7 +185,7 @@ public class ExhibitionServiceTest {
     @Test
     void updateExhibition_ShouldThrow403_WhenWrongCurator() {
         ExhibitionUpdateRequest request = new ExhibitionUpdateRequest(List.of(100L), "New title", "Theme",
-                "Description", "http://photo.com", "http://photo.com");
+                "Description", "http://photo.com", "http://photo.com", 0L);
         when(exhibitionRepository.findById(100L)).thenReturn(Optional.of(exhibition));
         UserDetailsImpl wrongUdi = new UserDetailsImpl(2L, "a", "b", "c", "d",
                 "e", Role.curator, false);
@@ -199,7 +199,7 @@ public class ExhibitionServiceTest {
     @Test
     void updateExhibition_ShouldThrow409_WhenConvertedIntoAuction() {
         ExhibitionUpdateRequest request = new ExhibitionUpdateRequest(List.of(10L), "New title", "Theme",
-                "Description", "http://photo.com", "http://photo.com");
+                "Description", "http://photo.com", "http://photo.com", 0L);
         exhibition.setStatus(ExhibitionStatus.converted_into_auction);
         when(exhibitionRepository.findById(100L)).thenReturn(Optional.of(exhibition));
         ArtrariException exception = assertThrows(
@@ -212,7 +212,7 @@ public class ExhibitionServiceTest {
     @Test
     void updateExhibition_ShouldThrow409_WhenWorkAlreadyOnExhibition() {
         ExhibitionUpdateRequest request = new ExhibitionUpdateRequest(List.of(11L), "New title", "Theme",
-                "Description", "http://photo.com", "http://photo.com");
+                "Description", "http://photo.com", "http://photo.com", 0L);
         when(exhibitionRepository.findById(100L)).thenReturn(Optional.of(exhibition));
         Exhibition exhibition1 = new Exhibition();
         Artwork newArtwork = new Artwork();

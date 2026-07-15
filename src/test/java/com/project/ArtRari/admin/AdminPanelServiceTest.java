@@ -15,6 +15,7 @@ import com.project.ArtRari.exhibition.ExhibitionStatus;
 import com.project.ArtRari.lot.Lot;
 import com.project.ArtRari.lot.LotRepository;
 import com.project.ArtRari.lot.LotStatus;
+import com.project.ArtRari.security.TokenBlacklistService;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
@@ -51,6 +52,8 @@ public class AdminPanelServiceTest {
     private ExhibitionRepository exhibitionRepository;
     @Mock
     private ArtworkMapper artworkMapper;
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
     @InjectMocks
     private AdminPanelService adminPanelService;
 
@@ -68,6 +71,7 @@ public class AdminPanelServiceTest {
     void setBanned_ShouldSucceed() {
         User targetUser = new User();
         targetUser.setId(2L);
+        targetUser.setEmail("john@doe.com");
         targetUser.setRole(Role.user);
         targetUser.setBanned(false);
         when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));

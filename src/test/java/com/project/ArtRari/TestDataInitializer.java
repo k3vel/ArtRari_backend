@@ -1,4 +1,4 @@
-package com.project.ArtRari.common;
+package com.project.ArtRari;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.artwork.ArtworkRepository;

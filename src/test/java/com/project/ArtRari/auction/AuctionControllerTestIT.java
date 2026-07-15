@@ -1,24 +1,21 @@
 package com.project.ArtRari.auction;
 
+import com.project.ArtRari.AbstractIntegrationTest;
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.auction.dto.AuctionCreateRequest;
 import com.project.ArtRari.auction.dto.AuctionUpdateRequest;
-import com.project.ArtRari.common.SkipBeforeEach;
+import com.project.ArtRari.SkipBeforeEach;
 import com.project.ArtRari.exhibition.Exhibition;
 import com.project.ArtRari.security.UserDetailsImpl;
-import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.TestDataInitializer;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
-import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -33,11 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@Transactional
-public class AuctionControllerTestIT {
+public class AuctionControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -72,7 +65,7 @@ public class AuctionControllerTestIT {
         testDataInitializer.createAndSaveLot(artwork, savedAuction);
 
         auctionUpdateRequest = new AuctionUpdateRequest(Instant.now().plusSeconds(60), Instant.now().plusSeconds(660),
-                new BigDecimal("2.0"));
+                new BigDecimal("2.0"), savedAuction.getVersion());
     }
 
     @Test
@@ -132,8 +125,9 @@ public class AuctionControllerTestIT {
     @Test
     void updateAuction_ShouldReturn200() throws Exception {
         savedAuction.setStatus(AuctionStatus.scheduled);
-        auctionRepository.save(savedAuction);
-        String request = jsonMapper.writeValueAsString(auctionUpdateRequest);
+        Auction changed = auctionRepository.saveAndFlush(savedAuction);
+        String request = jsonMapper.writeValueAsString(new AuctionUpdateRequest(Instant.now().plusSeconds(60),
+                Instant.now().plusSeconds(660), new BigDecimal("2.0"), changed.getVersion()));
         mockMvc.perform(put("/auctions/" + savedAuction.getId())
                         .with(user(testUdi))
                         .contentType(MediaType.APPLICATION_JSON)

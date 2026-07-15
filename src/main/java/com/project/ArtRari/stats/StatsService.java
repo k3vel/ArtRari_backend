@@ -10,6 +10,7 @@ import com.project.ArtRari.stats.dto.StatsResponse;
 import com.project.ArtRari.stats.dto.UserStatsResponse;
 import com.project.ArtRari.user.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,16 +21,23 @@ public class StatsService {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
 
+    @Cacheable(value = "stats", key = "#udi.id")
     public StatsResponse getStats(UserDetailsImpl udi) {
-        if (udi.getRole().equals(Role.user)) {
-            int bids = bidRepository.countAllByUserId(udi.getId());
-            int wins = bidRepository.countAllByIsWinTrueAndUserId(udi.getId());
-            int artworks = artworkRepository.countAllByOwnerId(udi.getId());
-            return new UserStatsResponse(bids, wins, artworks);
-        } else if (udi.getRole().equals(Role.curator)) {
-            int exhibitions = exhibitionRepository.countAllByCuratorId(udi.getId());
-            int auctions = auctionRepository.countAllByExhibitionCuratorId(udi.getId());
-            return new CuratorStatsResponse(exhibitions, auctions);
-        } else return null; //todo for admin
+        return switch (udi.getRole()) {
+            case Role.user -> {
+                int bids = bidRepository.countAllByUserId(udi.getId());
+                int wins = bidRepository.countAllByIsWinTrueAndUserId(udi.getId());
+                int artworks = artworkRepository.countAllByOwnerId(udi.getId());
+                yield new UserStatsResponse(bids, wins, artworks);
+            }
+            case Role.curator-> {
+                int exhibitions = exhibitionRepository.countAllByCuratorId(udi.getId());
+                int auctions = auctionRepository.countAllByExhibitionCuratorId(udi.getId());
+                yield new CuratorStatsResponse(exhibitions, auctions);
+            }
+            case Role.admin -> {
+                yield null; //todo продвинутые статы
+            }
+        };
     }
 }

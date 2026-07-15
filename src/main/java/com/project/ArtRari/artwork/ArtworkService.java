@@ -53,47 +53,50 @@ public class ArtworkService {
     }
 
     @Transactional
-    public ArtworkResponse addArtwork(ArtworkCreateRequest artworkCreateRequest, UserDetailsImpl udi) {
+    public ArtworkResponse addArtwork(ArtworkCreateRequest request, UserDetailsImpl udi) {
         User user = userRepository.findById(udi.getId()).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
-        List<Tag> tags = artworkCreateRequest.tags().stream().map(t -> tagRepository.getReferenceById(t)).toList();
+        List<Tag> tags = request.tags().stream().map(t -> tagRepository.getReferenceById(t)).toList();
         Artwork artwork = new Artwork();
         artwork.setOwner(user);
-        artwork.setTitle(artworkCreateRequest.title());
-        artwork.setAuthor(artworkCreateRequest.author());
-        artwork.setDescription(artworkCreateRequest.description());
-        artwork.setTechnique(artworkCreateRequest.technique());
+        artwork.setTitle(request.title());
+        artwork.setAuthor(request.author());
+        artwork.setDescription(request.description());
+        artwork.setTechnique(request.technique());
         artwork.setTags(tags);
-        artwork.setCreationDate(artworkCreateRequest.creationDate());
-        artwork.setPhotoUrl(artworkCreateRequest.photoUrl());
-        artwork.setStartPrice(artworkCreateRequest.startPrice());
+        artwork.setCreationDate(request.creationDate());
+        artwork.setPhotoUrl(request.photoUrl());
+        artwork.setStartPrice(request.startPrice());
         artwork.setStatus(WorkStatus.available);
         Artwork savedArtwork = artworkRepository.save(artwork);
         return artworkMapper.toArtworkResponse(savedArtwork);
     }
 
     @Transactional
-    public ArtworkResponse updateArtwork(Long id, ArtworkUpdateRequest artworkUpdateRequest, UserDetailsImpl udi) {
+    public ArtworkResponse updateArtwork(Long id, ArtworkUpdateRequest request, UserDetailsImpl udi) {
         Artwork artwork = artworkRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
+        if (!artwork.getVersion().equals(request.version())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Дані було змінено. Будь-ласка, оновіть сторінку");
+        }
         if (!udi.getId().equals(artwork.getOwner().getId())) {
             throw new ArtrariException(HttpStatus.FORBIDDEN, "Ви не можете редагувати чужу роботу");
         }
         if (lotRepository.existsByArtworkIdAndStatusNot(artwork.getId(), LotStatus.unsold)) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Ви не можете редагувати роботу, якщо вона на аукціоні");
         }
-        artwork.setTitle(artworkUpdateRequest.newTitle());
-        artwork.setAuthor(artworkUpdateRequest.newAuthor());
-        artwork.setDescription(artworkUpdateRequest.newDescription());
-        artwork.setTechnique(artworkUpdateRequest.newTechnique());
-        artwork.setTags(artworkUpdateRequest.newTags().stream().map(
+        artwork.setTitle(request.newTitle());
+        artwork.setAuthor(request.newAuthor());
+        artwork.setDescription(request.newDescription());
+        artwork.setTechnique(request.newTechnique());
+        artwork.setTags(request.newTags().stream().map(
                 t -> tagRepository.getReferenceById(t)).collect(Collectors.toList())
         );
-        artwork.setCreationDate(artworkUpdateRequest.newCreationDate());
-        artwork.setPhotoUrl(artworkUpdateRequest.newPhotoUrl());
-        artwork.setStartPrice(artworkUpdateRequest.newStartPrice());
+        artwork.setCreationDate(request.newCreationDate());
+        artwork.setPhotoUrl(request.newPhotoUrl());
+        artwork.setStartPrice(request.newStartPrice());
         Artwork savedArtwork = artworkRepository.save(artwork);
         return artworkMapper.toArtworkResponse(savedArtwork);
     }

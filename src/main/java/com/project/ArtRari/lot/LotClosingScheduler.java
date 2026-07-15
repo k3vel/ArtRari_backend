@@ -65,4 +65,3 @@ userRepository.save(newUser), artworkRepository.save(newArtwork).
 Метод: walletRepository.findByUserIdForUpdate(userId)
 
 Почему: Чтобы юзер не смог отправить два параллельных запроса на покупку двух картин по 1000$, имея на балансе всего 1000$.*/
-//todo оптимистичная блокировка всех сущностей которые могут редактироваться

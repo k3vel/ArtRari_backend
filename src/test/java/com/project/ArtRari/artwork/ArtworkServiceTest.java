@@ -63,7 +63,8 @@ public class ArtworkServiceTest {
         someonesArtwork.setId(2L);
         someonesArtwork.setTitle("Mona Lisa");
         someonesArtwork.setOwner(new User(2L, null, null, null, null, null,
-                null, false));
+                null, false,0L));
+        someonesArtwork.setVersion(0L);
     }
 
     @Test
@@ -85,7 +86,7 @@ public class ArtworkServiceTest {
         mockArtwork.setTitle("Mona Lisa");
         ArtworkResponse mockResponse = new ArtworkResponse(
                 artworkId, null, "Mona Lisa", null, null, null, null,
-                null, null, null);
+                null, null, null, 0L);
         when(artworkRepository.findById(artworkId)).thenReturn(Optional.of(mockArtwork));
         when(artworkMapper.toArtworkResponse(mockArtwork)).thenReturn(mockResponse);
         ArtworkResponse actualResponse = artworkService.getById(artworkId);
@@ -140,7 +141,7 @@ public class ArtworkServiceTest {
         savedArtwork.setId(1L);
         savedArtwork.setTitle("Mona Lisa");
         ArtworkResponse savedArtworkResponse = new ArtworkResponse(1L, null, "Mona Lisa", null,
-                null, null, List.of(), null, null, null);
+                null, null, List.of(), null, null, null, 0L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(userMock));
         when(artworkRepository.save(any(Artwork.class))).thenReturn(savedArtwork);
         when(artworkMapper.toArtworkResponse(savedArtwork)).thenReturn(savedArtworkResponse);
@@ -179,6 +180,7 @@ public class ArtworkServiceTest {
         Artwork artwork = new Artwork();
         artwork.setId(1L);
         artwork.setOwner(userMock);
+        artwork.setVersion(0L);
         when(artworkRepository.findById(1L)).thenReturn(Optional.of(artwork));
         when(lotRepository.existsByArtworkIdAndStatusNot(1L, LotStatus.unsold)).thenReturn(true);
         ArtrariException exception = assertThrows(
@@ -191,13 +193,14 @@ public class ArtworkServiceTest {
     @Test
     void updateArtwork_ShouldReturnArtworkResponse() {
         ArtworkUpdateRequest request = new ArtworkUpdateRequest("New title", null, null,
-                null, List.of(), null, null, null);
+                null, List.of(), null, null, null, 0L);
         Artwork artwork = new Artwork();
         artwork.setId(1L);
         artwork.setTitle("Old title");
         artwork.setOwner(userMock);
+        artwork.setVersion(0L);
         ArtworkResponse savedArtworkResponse = new ArtworkResponse(1L, null, "New title", null,
-                null, null, List.of(), null, null, null);
+                null, null, List.of(), null, null, null, 0L);
         when(artworkRepository.findById(1L)).thenReturn(Optional.of(artwork));
         when(lotRepository.existsByArtworkIdAndStatusNot(1L, LotStatus.unsold)).thenReturn(false);
         when(artworkRepository.save(any(Artwork.class))).thenReturn(artwork);

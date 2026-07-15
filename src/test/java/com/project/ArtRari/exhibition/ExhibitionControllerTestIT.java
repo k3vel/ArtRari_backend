@@ -1,23 +1,20 @@
 package com.project.ArtRari.exhibition;
 
+import com.project.ArtRari.AbstractIntegrationTest;
 import com.project.ArtRari.artwork.Artwork;
-import com.project.ArtRari.common.SkipBeforeEach;
+import com.project.ArtRari.SkipBeforeEach;
 import com.project.ArtRari.exhibition.dto.ExhibitionCreateRequest;
 import com.project.ArtRari.exhibition.dto.ExhibitionUpdateRequest;
 import com.project.ArtRari.security.UserDetailsImpl;
-import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.TestDataInitializer;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
-import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -29,11 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@Transactional
-public class ExhibitionControllerTestIT {
+public class ExhibitionControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -118,7 +111,7 @@ public class ExhibitionControllerTestIT {
     @Test
     public void updateExhibition_ShouldReturn200() throws Exception {
         ExhibitionUpdateRequest updateRequest = new ExhibitionUpdateRequest(List.of(testArtwork.getId()), "New title", "Theme",
-                "Description", "https://photo.com", "https://photo.com");
+                "Description", "https://photo.com", "https://photo.com", 0L);
         String request = jsonMapper.writeValueAsString(updateRequest);
         mockMvc.perform(put("/exhibitions/" + savedExhibition.getId())
                         .with(user(testUdi))

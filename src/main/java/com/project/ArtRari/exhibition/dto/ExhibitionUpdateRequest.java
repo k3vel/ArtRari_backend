@@ -17,5 +17,7 @@ public record ExhibitionUpdateRequest(
         @NotNull(message = "Поле Фон є обов'язковим")
         String backgroundUrl,
         @NotNull(message = "Поле Іконка є обов'язковим")
-        String thumbnailUrl
+        String thumbnailUrl,
+        @NotNull(message = "Поле Версія є обов'язковим")
+        Long version
 ) {}

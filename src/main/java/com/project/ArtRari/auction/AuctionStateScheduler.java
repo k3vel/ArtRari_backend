@@ -19,4 +19,4 @@ public class AuctionStateScheduler {
         auctionService.closeAuctions();
     }
 
-}
+} //todo вынести частоту в окружение

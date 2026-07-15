@@ -6,7 +6,11 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.cache.interceptor.SimpleCacheErrorHandler;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+
+import java.time.Duration;
 
 @Slf4j
 @Configuration
@@ -48,5 +52,12 @@ public class CacheConfigurator implements CachingConfigurer {
                 log.warn("Redis does not respond! Could not clean cache: {}", cache.getName());
             }
         };
+    }
+
+    @Bean
+    public RedisCacheConfiguration cacheConfiguration() {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(60))
+                .disableCachingNullValues();
     }
 }

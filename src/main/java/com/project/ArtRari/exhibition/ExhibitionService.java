@@ -71,18 +71,18 @@ public class ExhibitionService {
 
     @Transactional
     @CacheEvict(value = "top_exhibitions")
-    public ExhibitionResponse createExhibition(ExhibitionCreateRequest exhibitionCreateRequest, UserDetailsImpl udi) {
+    public ExhibitionResponse createExhibition(ExhibitionCreateRequest request, UserDetailsImpl udi) {
         User curator = userRepository.getReferenceById(udi.getId());
         Exhibition exhibition = new Exhibition();
         exhibition.setCurator(curator);
-        exhibition.setTitle(exhibitionCreateRequest.title());
-        exhibition.setTheme(exhibitionCreateRequest.theme());
-        exhibition.setDescription(exhibitionCreateRequest.description());
-        exhibition.setBackgroundUrl(exhibitionCreateRequest.backgroundUrl());
+        exhibition.setTitle(request.title());
+        exhibition.setTheme(request.theme());
+        exhibition.setDescription(request.description());
+        exhibition.setBackgroundUrl(request.backgroundUrl());
         exhibition.setStartDate(Instant.now());
         exhibition.setStatus(ExhibitionStatus.running);
-        exhibition.setThumbnailUrl(exhibitionCreateRequest.thumbnailUrl());
-        List<Artwork> artworks = artworkRepository.findAllById(exhibitionCreateRequest.artworkIds());
+        exhibition.setThumbnailUrl(request.thumbnailUrl());
+        List<Artwork> artworks = artworkRepository.findAllById(request.artworkIds());
         try {
             exhibition.setArtworks(artworks);
         } catch (IllegalStateException e) {
@@ -96,11 +96,14 @@ public class ExhibitionService {
     @CacheEvict(value = "top_exhibitions")
     public ExhibitionResponse updateExhibition(
             Long id,
-            ExhibitionUpdateRequest exhibitionUpdateRequest,
+            ExhibitionUpdateRequest request,
             UserDetailsImpl udi) {
         Exhibition exhibition = exhibitionRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
+        if (!exhibition.getVersion().equals(request.version())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Дані було змінено. Будь-ласка, оновіть сторінку");
+        }
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
@@ -108,12 +111,12 @@ public class ExhibitionService {
             throw new ArtrariException(HttpStatus.CONFLICT,
                     "Ви не можете редагувати виставку, яку перетворено на аукціон");
         }
-        exhibition.setTitle(exhibitionUpdateRequest.title());
-        exhibition.setTheme(exhibitionUpdateRequest.theme());
-        exhibition.setDescription(exhibitionUpdateRequest.description());
-        exhibition.setBackgroundUrl(exhibitionUpdateRequest.backgroundUrl());
-        exhibition.setThumbnailUrl(exhibitionUpdateRequest.thumbnailUrl());
-        List<Artwork> artworks = artworkRepository.findAllById(exhibitionUpdateRequest.artworkIds());
+        exhibition.setTitle(request.title());
+        exhibition.setTheme(request.theme());
+        exhibition.setDescription(request.description());
+        exhibition.setBackgroundUrl(request.backgroundUrl());
+        exhibition.setThumbnailUrl(request.thumbnailUrl());
+        List<Artwork> artworks = artworkRepository.findAllById(request.artworkIds());
         try {
             exhibition.replaceArtworks(artworks);
         } catch (IllegalStateException e) {

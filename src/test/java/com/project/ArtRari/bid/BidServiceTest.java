@@ -2,6 +2,8 @@ package com.project.ArtRari.bid;
 
 import com.project.ArtRari.artwork.Artwork;
 import com.project.ArtRari.auction.Auction;
+import com.project.ArtRari.auction.AuctionService;
+import com.project.ArtRari.bid.dto.BidPlacedEvent;
 import com.project.ArtRari.bid.dto.BidPreviewResponse;
 import com.project.ArtRari.exception.ArtrariException;
 import com.project.ArtRari.lot.Lot;
@@ -17,8 +19,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -41,7 +44,9 @@ public class BidServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private SimpMessagingTemplate simpMessagingTemplate;
+    private AuctionService auctionService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
     @InjectMocks
     private BidService bidService;
 
@@ -54,6 +59,13 @@ public class BidServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(bidService, "maxRetryAttempts", 3);
+        ReflectionTestUtils.setField(bidService, "retryAfterMs", 50L);
+        ReflectionTestUtils.setField(bidService, "thresholdMinutes", 10L);
+        ReflectionTestUtils.setField(bidService, "extensionSeconds", 600L);
+        ReflectionTestUtils.setField(bidService, "shiftThresholdSeconds", 15L);
+        ReflectionTestUtils.setField(bidService, "bidService", bidService);
+
         udiMock = new UserDetailsImpl(1L, "John", "Doe", null, null,
                 null, Role.user, false);
         userMock = new User();
@@ -195,7 +207,7 @@ public class BidServiceTest {
         assertNotNull(res);
         assertEquals(new BigDecimal("100"), res.amount());
         verify(bidRepository).save(any(Bid.class));
-        verify(simpMessagingTemplate).convertAndSend(anyString(), any(BidPreviewResponse.class));
+        verify(eventPublisher).publishEvent(any(BidPlacedEvent.class));
         long secondsToLotEnd = Duration.between(Instant.now(), lotMock.getEndDate()).toSeconds();
         long secondsToAuctionEnd = Duration.between(Instant.now(), auctionMock.getEndDate()).toSeconds();
         assertTrue(secondsToLotEnd >= 598 && secondsToLotEnd <= 600);

@@ -20,7 +20,8 @@ public class UserMapper {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getEmail()
+                user.getEmail(),
+                user.getVersion()
         );
     }
 }

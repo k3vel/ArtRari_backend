@@ -1,9 +1,10 @@
 package com.project.ArtRari.artwork;
 
 
+import com.project.ArtRari.AbstractIntegrationTest;
 import com.project.ArtRari.artwork.dto.ArtworkUpdateRequest;
-import com.project.ArtRari.common.SkipBeforeEach;
-import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.SkipBeforeEach;
+import com.project.ArtRari.TestDataInitializer;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.TestInfo;
 import tools.jackson.databind.json.JsonMapper;
@@ -11,14 +12,10 @@ import com.project.ArtRari.artwork.dto.ArtworkCreateRequest;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.Role;
 import com.project.ArtRari.user.User;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -31,11 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@Transactional
-public class ArtworkControllerTestIT {
+public class ArtworkControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -67,12 +60,11 @@ public class ArtworkControllerTestIT {
 
         updateRequest = new ArtworkUpdateRequest("New Title", "Author",
                 "Description", "Technique", List.of(), LocalDate.now(),
-                "https://photo.com", new BigDecimal("1.1"));
+                "https://photo.com", new BigDecimal("1.1"), savedArtwork.getVersion());
     }
 
     @Test
     public void getArtwork_ShouldReturn200AndArtwork() throws Exception {
-        //todo work status on auction on exhibition ...
         mockMvc.perform(get("/artworks/" + savedArtwork.getId())
                 .with(user(testUdi)))
                 .andExpect(status().isOk())

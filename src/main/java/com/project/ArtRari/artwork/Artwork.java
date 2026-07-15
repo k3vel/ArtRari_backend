@@ -61,4 +61,7 @@ public class Artwork {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private WorkStatus status;
+
+    @Version
+    private Long version;
 }

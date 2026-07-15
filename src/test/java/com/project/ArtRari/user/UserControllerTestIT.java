@@ -1,18 +1,15 @@
 package com.project.ArtRari.user;
 
-import com.project.ArtRari.common.TestDataInitializer;
+import com.project.ArtRari.AbstractIntegrationTest;
+import com.project.ArtRari.TestDataInitializer;
 import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.dto.PasswordChangeRequest;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
-import jakarta.transaction.Transactional;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -21,11 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
-@Transactional
-public class UserControllerTestIT {
+public class UserControllerTestIT extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -57,7 +50,7 @@ public class UserControllerTestIT {
     @Test
     public void updateProfile_ShouldReturn200() throws Exception {
         ProfileUpdateRequest updateRequest = new ProfileUpdateRequest("NewFirst", "NewLast",
-                "NewPhone", "NewEmail@gmail.com");
+                "NewPhone", "NewEmail@gmail.com", 0L);
         String request = jsonMapper.writeValueAsString(updateRequest);
         mockMvc.perform(put("/profile")
                         .with(user(testUdi))
@@ -71,7 +64,7 @@ public class UserControllerTestIT {
     public void updateProfile_ShouldReturn409_WhenEmailAlreadyExists() throws Exception {
         User user = testDataInitializer.createAndSaveUser("abc", Role.admin).a;
         ProfileUpdateRequest updateRequest = new ProfileUpdateRequest("NewFirst", "NewLast",
-                "NewPhone", user.getEmail());
+                "NewPhone", user.getEmail(), 0L);
         String request = jsonMapper.writeValueAsString(updateRequest);
 
         mockMvc.perform(put("/profile")

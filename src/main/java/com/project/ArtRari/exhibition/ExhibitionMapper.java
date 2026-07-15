@@ -43,7 +43,8 @@ public class ExhibitionMapper {
                 exhibition.getBackgroundUrl(),
                 userMapper.toUserPreviewResponse(exhibition.getCurator()),
                 exhibition.getStartDate(),
-                exhibition.getStatus().name()
+                exhibition.getStatus().name(),
+                exhibition.getVersion()
         );
     }
 

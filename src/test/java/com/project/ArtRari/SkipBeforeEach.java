@@ -1,4 +1,4 @@
-package com.project.ArtRari.common;
+package com.project.ArtRari;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

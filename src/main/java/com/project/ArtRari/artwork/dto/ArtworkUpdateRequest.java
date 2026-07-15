@@ -26,5 +26,7 @@ public record ArtworkUpdateRequest(
         String newPhotoUrl,
         @NotNull(message = "Поле Ціна є обов'язковим")
         @PositiveOrZero(message = "Стартова ціна має бути не менше 0")
-        BigDecimal newStartPrice
+        BigDecimal newStartPrice,
+        @NotNull(message = "Поле Версія є обов'язковим")
+        Long version
 ) {}

@@ -35,5 +35,8 @@ public class User {
     @Column(name = "is_banned")
     private boolean isBanned;
 
+    @Version
+    private Long version;
+
     //todo private boolean isVerified
 }

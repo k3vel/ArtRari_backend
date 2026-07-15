@@ -1,3 +1,5 @@
 package com.project.ArtRari.stats.dto;
 
-public interface StatsResponse {}
+import java.io.Serializable;
+
+public interface StatsResponse extends Serializable {}

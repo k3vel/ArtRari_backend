@@ -16,5 +16,7 @@ public record AuctionUpdateRequest(
         Instant endDate,
         @NotNull(message = "Аукціон повинен мати крок")
         @Positive(message = "Крок аукціону має бути більше 0")
-        BigDecimal step
+        BigDecimal step,
+        @NotNull(message = "Поле Версія є обов'язковим")
+        Long version
 ) {}

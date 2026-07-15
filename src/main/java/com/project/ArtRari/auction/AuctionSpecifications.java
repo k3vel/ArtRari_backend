@@ -2,12 +2,22 @@ package com.project.ArtRari.auction;
 
 import com.project.ArtRari.exhibition.ExhibitionSpecifications;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.Instant;
 import java.util.List;
 
 public class AuctionSpecifications {
+    public static Specification<Auction> fetchExhibition() {
+        return (table, query, criteriaBuilder) -> {
+            if (Long.class != query.getResultType() && long.class != query.getResultType()) {
+                table.fetch("exhibition", JoinType.LEFT);
+            }
+            return criteriaBuilder.conjunction();
+        };
+    }
+
     public static Specification<Auction> hasStatuses(List<AuctionStatus> statuses) {
         return (table, query, criteriaBuilder) ->
                 table.get("status").in(statuses);

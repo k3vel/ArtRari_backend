@@ -42,6 +42,9 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(udi.getId()).orElseThrow(
                 () -> new ArtrariException(HttpStatus.NOT_FOUND, "Такого користувача не існує")
         );
+        if (!user.getVersion().equals(request.version())) {
+            throw new ArtrariException(HttpStatus.CONFLICT, "Дані було змінено. Будь-ласка, оновіть сторінку");
+        }
         if (!user.getEmail().equals(request.newEmail()) && userRepository.existsByEmail(request.newEmail())) {
             throw new ArtrariException(HttpStatus.CONFLICT, "Цей email вже зайнятий");
         }

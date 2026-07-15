@@ -15,5 +15,6 @@ public record AuctionResponse(
         Instant startDate,
         Instant endDate,
         UserPreviewResponse curator,
-        String status
+        String status,
+        Long version
 ) {}
