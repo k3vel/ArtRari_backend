@@ -63,7 +63,7 @@ public class BidService {
             }
         }
         return anonymousIds;
-    } //todo неэффективно
+    }
 
     public List<BidPreviewResponse> getBidPreviews(Long lotId, UserDetailsImpl udi) {
         List<Bid> bids = bidRepository.findByLotIdOrderByCreatedAtDesc(lotId);

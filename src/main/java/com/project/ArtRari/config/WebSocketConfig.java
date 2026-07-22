@@ -1,5 +1,6 @@
-package com.project.ArtRari.websocket;
+package com.project.ArtRari.config;
 
+import com.project.ArtRari.websocket.WebSocketAuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

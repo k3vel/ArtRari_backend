@@ -24,7 +24,7 @@ public class FilterChainConfigurator {
     private final CustomLogoutHandler logoutHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
@@ -50,6 +50,7 @@ public class FilterChainConfigurator {
                                 "/tags/**",
                                 "/lots/**",
                                 "/artworks/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/websocket","/websocket/**").permitAll()
                         .anyRequest().authenticated()
@@ -58,7 +59,7 @@ public class FilterChainConfigurator {
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .addLogoutHandler(logoutHandler)
-                        .logoutSuccessHandler((request, response, authentication) -> {
+                        .logoutSuccessHandler((_, response, _) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
                             response.getWriter().flush();
                         })

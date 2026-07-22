@@ -1,5 +1,7 @@
 package com.project.ArtRari.config;
 
+import com.project.ArtRari.security.TokenFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,5 +23,12 @@ public class SecurityConfigurator {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public FilterRegistrationBean<TokenFilter> disableTokenFilterRegistration(TokenFilter tokenFilter) {
+        FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(tokenFilter);
+        registration.setEnabled(false);
+        return registration;
     }
 }

@@ -29,4 +29,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             OR u.phone LIKE %?1%)
             AND u.id != ?2""")
     Page<User> findAllBySearchAndIdNot(String search, Long id, Pageable pageable);
+
 }

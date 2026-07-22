@@ -13,3 +13,8 @@ public class ArtRariApplication {
 		SpringApplication.run(ArtRariApplication.class, args);
 	}
 }
+
+/*todo верификация аккаунта при регистрации,
+*  система оплаты (демо версия),
+*  ЛОГИ,
+*  КРАСИВАЯ ПРЕЗЕНТАЦИЯ */

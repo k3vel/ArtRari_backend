@@ -45,4 +45,6 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, JpaSpec
     Page<Auction> findByExhibitionCuratorId(Long exhibitionCuratorId, Pageable pageable);
 
     int countAllByExhibitionCuratorId(Long exhibitionCuratorId);
+
+    int countAllByStatus(AuctionStatus status);
 }
