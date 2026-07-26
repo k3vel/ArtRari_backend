@@ -2,11 +2,11 @@ package com.project.ArtRari.security;
 
 import com.project.ArtRari.user.Role;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jboss.logging.MDC;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
 import java.util.List;
 
 @Component
@@ -32,7 +31,7 @@ public class TokenFilter extends OncePerRequestFilter {
             @Nullable HttpServletRequest request,
             @Nullable HttpServletResponse response,
             @Nullable FilterChain filterChain
-    ) throws ServletException, IOException {
+    ) {
         String jwt = null;
         String username = null;
         UserDetails userDetails = null;
@@ -57,6 +56,7 @@ public class TokenFilter extends OncePerRequestFilter {
                     }
                     //достаем инфо о юзере из токена
                     Long userId = jwtService.getIdFromJwt(jwt);
+                    MDC.put("userId", userId);
                     String roleStr = jwtService.getRoleFromJwt(jwt);
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleStr));
                     String cleanRoleName = roleStr.replace("ROLE_", "");
@@ -66,11 +66,13 @@ public class TokenFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth); //кладем инфо об авторизации в контекст (действительно лишь на время выполнения запроса), чтоб не передавать инфо о юзере везде
                 }
             }
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
             log.error("Неможливо встановити аутентифікацію користувача: {}", e.getMessage());
             SecurityContextHolder.clearContext();
+        } finally {
+            MDC.remove("userId");
         }
-        filterChain.doFilter(request, response);
     }
 }
 /* приняли запрос - создали поток для его обработки - создали карман (секьюрити контекст для этого потока) - сработал фильтр - фильтр заглянул в карман - фильтр положил юзера в карман - обработали запрос и очистили карман*/

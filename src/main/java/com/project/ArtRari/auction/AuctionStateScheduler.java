@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 public class AuctionStateScheduler {
     private final AuctionService auctionService;
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRateString = "${app.scheduler.auction-open-rate-ms:60000}")
     public void openAuctions() {
         auctionService.openAuctions();
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRateString = "${app.scheduler.auction-close-rate-ms:10000}")
     public void closeAuctions() {
         auctionService.closeAuctions();
     }
 
-} //todo вынести частоту в окружение
+}

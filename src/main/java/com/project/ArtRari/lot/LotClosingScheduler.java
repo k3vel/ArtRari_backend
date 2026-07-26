@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class LotClosingScheduler {
     private final LotService lotService;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRateString = "${app.scheduler.lot-close-rate-ms:10000}")
     public void closeLots() {
         lotService.closeLots();
     }

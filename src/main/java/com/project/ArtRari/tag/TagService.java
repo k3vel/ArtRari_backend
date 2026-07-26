@@ -5,6 +5,7 @@ import com.project.ArtRari.artwork.ArtworkRepository;
 import com.project.ArtRari.exception.ArtrariException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TagService {
     private final TagRepository tagRepository;
     private final ArtworkRepository artworkRepository;
@@ -33,7 +35,8 @@ public class TagService {
         }
         Tag tag = new Tag();
         tag.setName(tagName);
-        tagRepository.save(tag);
+        Tag savedTag = tagRepository.save(tag);
+        log.info("Додано тег {}", savedTag.getId());
     }
 
     @Transactional
@@ -45,5 +48,6 @@ public class TagService {
             artwork.getTags().remove(tag);
         }
         tagRepository.delete(tag);
+        log.info("Видалено тег {}", tag.getId());
     }
 }

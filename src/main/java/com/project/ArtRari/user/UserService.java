@@ -7,6 +7,7 @@ import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.ProfileUpdateRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -54,7 +56,9 @@ public class UserService implements UserDetailsService {
         user.setLastName(request.newLastName());
         user.setPhone(request.newPhone());
         user.setEmail(request.newEmail());
-        return userMapper.toProfileResponse(user);
+        User savedUser = userRepository.save(user);
+        log.info("Змінено профіль користувача");
+        return userMapper.toProfileResponse(savedUser);
     }
 
     @Transactional
@@ -66,6 +70,7 @@ public class UserService implements UserDetailsService {
             throw new ArtrariException(HttpStatus.BAD_REQUEST, "Невірний старий пароль");
         }
         user.setPassword(passwordEncoder.encode(passwordChangeRequest.newPassword()));
+        log.info("Змінено пароль");
     }
 
 }

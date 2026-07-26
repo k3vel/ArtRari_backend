@@ -22,6 +22,7 @@ import com.project.ArtRari.user.dto.ProfileResponse;
 import com.project.ArtRari.user.dto.UserPreviewResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +38,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminPanelService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -86,8 +88,10 @@ public class AdminPanelService {
         user.setBanned(isBanned);
         if (isBanned) {
             tokenBlacklistService.banUser(user.getEmail(), expirationMs);
+            log.info("Заблоковано користувача {}", user.getId());
         } else {
             tokenBlacklistService.unbanUser(user.getEmail());
+            log.info("Розблоковано користувача {}", user.getId());
         }
     }
 
@@ -108,6 +112,7 @@ public class AdminPanelService {
             case "admin": user.setRole(Role.admin); break;
             default: throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
+        log.info("Змінено роль користувача {} на {}", user.getId(), role);
     }
 
     public PageResponse<ArtworkAdvancedPreviewResponse> getAllArtworks(String search, List<String> tags, int page) {
@@ -143,6 +148,7 @@ public class AdminPanelService {
         }
         lotRepository.deleteByArtworkId(artwork.getId());
         artworkRepository.delete(artwork);
+        log.info("Примусово видалено роботу {}", artwork.getId());
     }
 
     public PageResponse<ExhibitionPreviewResponse> getAllExhibitions(String search, List<String> tags, int page) {
@@ -173,6 +179,7 @@ public class AdminPanelService {
             artwork.setExhibition(null);
         }
         exhibitionRepository.delete(exhibition);
+        log.info("Примусово видалено виставку {}", exhibition.getId());
     }
 
     @Transactional
@@ -185,11 +192,12 @@ public class AdminPanelService {
         }
         lot.setStatus(LotStatus.cancelled);
         lot.getArtwork().setExhibition(null);
+        log.info("Скасовано лот {}", lot.getId());
     }
 
     @Transactional
     public void deleteBid(Long id) {
-        Bid bid = bidRepository.findWithLotAndAuctionById(id).orElseThrow(
+        Bid bid = bidRepository.findWithLotAndAuctionAndUserById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         if (bid.getLot().getAuction().getStatus() != AuctionStatus.active) {
@@ -205,5 +213,7 @@ public class AdminPanelService {
         } else {
             lot.setCurrentPrice(lot.getArtwork().getStartPrice());
         }
+
+        log.info("Примусово видалено ставку {} користувача {}", bid.getId(), bid.getUser().getId());
     }
 }

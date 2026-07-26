@@ -12,6 +12,7 @@ import com.project.ArtRari.lot.LotStatus;
 import com.project.ArtRari.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import static org.springframework.data.jpa.domain.Specification.where;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuctionService {
     private final AuctionRepository auctionRepository;
@@ -79,7 +81,7 @@ public class AuctionService {
         Exhibition exhibition = exhibitionRepository.findByIdAndStatus(request.exhibitionId(), ExhibitionStatus.running)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (auctionRepository.existsByExhibitionId(exhibition.getId())) {
-            throw new ArtrariException(HttpStatus.CONFLICT, "Auction for this exhibition already exists");
+            throw new ArtrariException(HttpStatus.CONFLICT, "Аукціон на основі цієї виставки вже існує");
         }
         if (!udi.getId().equals(exhibition.getCurator().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -105,6 +107,7 @@ public class AuctionService {
         auction.setLots(lots);
         Auction savedAuction = auctionRepository.save(auction);
 
+        log.info("Створено аукціон {}", savedAuction.getId());
         return auctionMapper.mapAuctionIntoAuctionResponse(savedAuction);
     }
 
@@ -133,6 +136,8 @@ public class AuctionService {
         auction.setEndDate(request.endDate()); //лоты учтены
         auction.setStep(request.step());
         Auction savedAuction = auctionRepository.save(auction);
+
+        log.info("Змінено аукціон {}", savedAuction.getId());
         return auctionMapper.mapAuctionIntoAuctionResponse(savedAuction);
     }
 
@@ -151,6 +156,7 @@ public class AuctionService {
                     "Ви не можете видаляти аукціон, який проходить або завершений");
         }
         exhibition.setStatus(ExhibitionStatus.running); //лоты удаляются каскадно, статус работ available как и был
+        log.info("Видалено аукціон {}", auction.getId());
         auctionRepository.delete(auction);
     }
 
@@ -164,8 +170,10 @@ public class AuctionService {
         for (Auction auction : auctions) {
             auction.setStatus(AuctionStatus.active);
             auction.setLotsStatuses(LotStatus.available);
+            log.info("Відкрито аукціон {}", auction.getId());
             Exhibition e = auction.getExhibition();
             e.setStatus(ExhibitionStatus.converted_into_auction);
+            log.info("Закрито виставку {}", e.getId());
         }
     }
 
@@ -175,6 +183,7 @@ public class AuctionService {
         List<Auction> auctions = auctionRepository.findAuctionsToClose(Instant.now());
         for (Auction auction : auctions) {
             auction.setStatus(AuctionStatus.finished);
+            log.info("Закрито аукціон {}", auction.getId());
         }
     }
 

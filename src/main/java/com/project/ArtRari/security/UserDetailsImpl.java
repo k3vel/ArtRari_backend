@@ -14,7 +14,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements UserDetails { //todo final fields
     private Long id;
     private String firstName;
     private String lastName;

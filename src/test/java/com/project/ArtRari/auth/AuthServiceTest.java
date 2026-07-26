@@ -90,17 +90,20 @@ public class AuthServiceTest {
         when(userRepository.existsByFirstNameAndLastName(signupRequest.firstName(), signupRequest.lastName()))
                 .thenReturn(false);
         when(passwordEncoder.encode(signupRequest.password())).thenReturn("hashed-password");
+        User savedUser = new User();
+        savedUser.setId(1L);
+        when(userRepository.save(any())).thenReturn(savedUser);
         authService.signUp(signupRequest);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
-        User savedUser = userCaptor.getValue();
-        assertEquals("John", savedUser.getFirstName());
-        assertEquals("Doe", savedUser.getLastName());
-        assertEquals("test@mail.com", savedUser.getEmail());
-        assertEquals("123456789", savedUser.getPhone());
-        assertEquals("hashed-password", savedUser.getPassword());
-        assertEquals(Role.user, savedUser.getRole());
+        User capturedUser = userCaptor.getValue();
+        assertEquals("John", capturedUser.getFirstName());
+        assertEquals("Doe", capturedUser.getLastName());
+        assertEquals("test@mail.com", capturedUser.getEmail());
+        assertEquals("123456789", capturedUser.getPhone());
+        assertEquals("hashed-password", capturedUser.getPassword());
+        assertEquals(Role.user, capturedUser.getRole());
     }
 
     @Test

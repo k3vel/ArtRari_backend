@@ -1,5 +1,8 @@
 package com.project.ArtRari.exception;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -12,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class ArtrariErrorAdvice {
 
     @ExceptionHandler(ArtrariException.class)
@@ -40,12 +44,37 @@ public class ArtrariErrorAdvice {
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<?> objectOptimisticLockingFailureException(ObjectOptimisticLockingFailureException e) {
+        log.warn("Конфлікт версій (Optimistic Lock): {}", e.getMessage());
         ErrorResponse errorResponse = new ErrorResponse(
                 409,
                 "CONFLICT",
-                e.getMessage(),
+                "Дані було змінено. Будь ласка, оновіть сторінку",
                 Instant.now()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> dataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.error("Помилка цілісності даних БД: {}", e.getMessage(), e);
+        ErrorResponse errorResponse = new ErrorResponse(
+                409,
+                "CONFLICT",
+                "Конфлікт даних. Можливо, даний запис вже існує",
+                Instant.now()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<?> dataAccessException(DataAccessException e) {
+        log.error("Критична помилка бази даних: {}", e.getMessage(), e);
+        ErrorResponse errorResponse = new ErrorResponse(
+                500,
+                "INTERNAL_SERVER_ERROR",
+                "Помилка сервера при роботі з даними",
+                Instant.now()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }

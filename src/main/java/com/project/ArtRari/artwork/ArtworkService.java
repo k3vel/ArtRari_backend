@@ -12,6 +12,7 @@ import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ArtworkService {
     private final ArtworkRepository artworkRepository;
     private final ArtworkMapper artworkMapper;
@@ -70,6 +72,7 @@ public class ArtworkService {
         artwork.setStartPrice(request.startPrice());
         artwork.setStatus(WorkStatus.available);
         Artwork savedArtwork = artworkRepository.save(artwork);
+        log.info("Додано роботу {}", savedArtwork.getId());
         return artworkMapper.toArtworkResponse(savedArtwork);
     }
 
@@ -98,6 +101,7 @@ public class ArtworkService {
         artwork.setPhotoUrl(request.newPhotoUrl());
         artwork.setStartPrice(request.newStartPrice());
         Artwork savedArtwork = artworkRepository.save(artwork);
+        log.info("Змінено роботу {}", savedArtwork.getId());
         return artworkMapper.toArtworkResponse(savedArtwork);
     }
 
@@ -114,6 +118,7 @@ public class ArtworkService {
         }
         lotRepository.deleteByArtworkId(artwork.getId());
         artworkRepository.delete(artwork);
+        log.info("Видалено роботу {}", artwork.getId());
     }
 
     public PageResponse<ArtworkPreviewResponse> getMyArtworks(int page, UserDetailsImpl udi) {

@@ -12,8 +12,11 @@ import com.project.ArtRari.security.UserDetailsImpl;
 import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -30,6 +33,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BidService {
     private final BidRepository bidRepository;
     private final LotRepository lotRepository;
@@ -63,7 +67,7 @@ public class BidService {
             }
         }
         return anonymousIds;
-    }
+    } //todo неоптимально
 
     public List<BidPreviewResponse> getBidPreviews(Long lotId, UserDetailsImpl udi) {
         List<Bid> bids = bidRepository.findByLotIdOrderByCreatedAtDesc(lotId);
@@ -85,6 +89,7 @@ public class BidService {
                 try {Thread.sleep(retryAfterMs);} catch (InterruptedException _) {}
             }
         }
+        log.error("Не вдається поставити ставку на лот {} після {} спроб", lotId, maxRetryAttempts);
         throw new ArtrariException(HttpStatus.INTERNAL_SERVER_ERROR, "На жаль, сервер перевантажений. Спробуйте знову");
     }
 
@@ -143,6 +148,7 @@ public class BidService {
         );
         eventPublisher.publishEvent(new BidPlacedEvent(lotId, response));
 
+        log.info("Створено ставку {} ({} у.о.) на лот {}", savedBid.getId(), amount, lot.getId());
         return new BidPreviewResponse(
                 "Невідомий поціновувач мистецтва " + userId,
                 savedBid.getAmount(),

@@ -224,12 +224,15 @@ public class AdminPanelServiceTest {
         lot.setId(5L);
         lot.setAuction(auction);
         lot.setCurrentPrice(new BigDecimal("500.0"));
+        User bidder = new User();
+        bidder.setId(10L);
         Bid bidToDelete = new Bid();
         bidToDelete.setId(100L);
         bidToDelete.setLot(lot);
+        bidToDelete.setUser(bidder);
         Bid previousMaxBid = new Bid();
         previousMaxBid.setAmount(new BigDecimal("300.0"));
-        when(bidRepository.findWithLotAndAuctionById(100L)).thenReturn(Optional.of(bidToDelete));
+        when(bidRepository.findWithLotAndAuctionAndUserById(100L)).thenReturn(Optional.of(bidToDelete));
         when(bidRepository.findTopByLotIdOrderByAmountDesc(5L)).thenReturn(Optional.of(previousMaxBid));
         adminPanelService.deleteBid(100L);
 
@@ -248,10 +251,13 @@ public class AdminPanelServiceTest {
         lot.setId(5L);
         lot.setAuction(auction);
         lot.setArtwork(artwork);
+        User bidder = new User();
+        bidder.setId(10L);
         Bid bidToDelete = new Bid();
         bidToDelete.setId(100L);
         bidToDelete.setLot(lot);
-        when(bidRepository.findWithLotAndAuctionById(100L)).thenReturn(Optional.of(bidToDelete));
+        bidToDelete.setUser(bidder);
+        when(bidRepository.findWithLotAndAuctionAndUserById(100L)).thenReturn(Optional.of(bidToDelete));
         when(bidRepository.findTopByLotIdOrderByAmountDesc(5L)).thenReturn(Optional.empty());
         adminPanelService.deleteBid(100L);
 
@@ -268,7 +274,7 @@ public class AdminPanelServiceTest {
         Bid bid = new Bid();
         bid.setId(100L);
         bid.setLot(lot);
-        when(bidRepository.findWithLotAndAuctionById(100L)).thenReturn(Optional.of(bid));
+        when(bidRepository.findWithLotAndAuctionAndUserById(100L)).thenReturn(Optional.of(bid));
 
         ArtrariException exception = assertThrows(ArtrariException.class, () ->
                 adminPanelService.deleteBid(100L)

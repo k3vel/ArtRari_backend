@@ -8,6 +8,7 @@ import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -32,11 +34,13 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(signinRequest.email(), signinRequest.password())
             );
         } catch (BadCredentialsException e) {
+            log.warn("Невдала спроба авторизації для пошти {}", signinRequest.email());
             throw new ArtrariException(HttpStatus.UNAUTHORIZED, "Невірна пошта або пароль");
         }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateToken(authentication);
         UserDetailsImpl udi = (UserDetailsImpl) authentication.getPrincipal();
+        log.info("Користувача {} успішно авторизовано", udi.getId());
         return new AuthResponse(
                 jwt,
                 udi.getId(),
@@ -61,6 +65,7 @@ public class AuthService {
         user.setEmail(signupRequest.email());
         user.setPassword(passwordEncoder.encode(signupRequest.password()));
         user.setRole(Role.user);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        log.info("Зареєстровано користувача {}", savedUser.getId());
     }
 }

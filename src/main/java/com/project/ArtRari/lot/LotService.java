@@ -11,6 +11,7 @@ import com.project.ArtRari.purchase.PurchaseStatus;
 import com.project.ArtRari.security.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LotService {
     private final LotRepository lotRepository;
     private final LotMapper lotMapper;
@@ -47,6 +49,7 @@ public class LotService {
         List<Lot> lots = lotRepository.findLotsToClose(Instant.now(), LotStatus.available);
         for (Lot lot : lots) {
             lotService.closeLot(lot.getId());
+            log.info("Закрито лот {}", lot.getId());
         }
     }
 

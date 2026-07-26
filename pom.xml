@@ -165,6 +165,18 @@
 			<artifactId>bucket4j-redis</artifactId>
 			<version>8.10.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>7.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>3.3.0</version>
+		</dependency>
 	</dependencies>
 
 

@@ -97,6 +97,6 @@ public class AdminPanelController {
         adminPanelService.deleteBid(id);
         return ResponseEntity.noContent().build();
     }
-    //todo остановить лот, аукцион
+    //остановить лот/аукцион (надо добавить в сущность поле stop_date и статус stopped)
 
 }

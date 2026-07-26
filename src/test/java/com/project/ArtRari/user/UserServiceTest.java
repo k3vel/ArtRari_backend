@@ -82,6 +82,7 @@ public class UserServiceTest {
         when(userRepository.existsByPhone("987654321")).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         ProfileResponse mockResponse = mock(ProfileResponse.class);
+        when(userRepository.save(testUser)).thenReturn(testUser);
         when(userMapper.toProfileResponse(testUser)).thenReturn(mockResponse);
         ProfileResponse actual = userService.updateProfile(udiMock, request);
 

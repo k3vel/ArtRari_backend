@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- PROFILE LOCAL -->
+    <springProfile name="!docker">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <!--
+                  Разбор паттерна по цветам:
+                  %clr(%d{HH:mm:ss.SSS}){faint}  -> Тусклое время (14:05:32.123)
+                  %clr(%-5level)                 -> Уровень лога (INFO, ERROR) стандартным цветом
+                  %clr([%X{traceId}]){magenta}   -> Наш traceId фиолетовым цветом
+                  %clr(%-40.40logger{39}){cyan}  -> Имя класса бирюзовым цветом
+                  %clr([User:%X{userId}]){yellow} -> Айди юзера желтым цветом
+                  %m%n                           -> Само сообщение и перенос строки
+                -->
+                <pattern>
+                    %clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%X{traceId}]){magenta} %clr([%X{userId}]){yellow} %clr(%-40.40logger{39}){cyan} - %m%n
+                </pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+
+    <!-- PROFILE DOCKER -->
+    <springProfile name="docker">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE" />
+        </root>
+    </springProfile>
+
+</configuration>

@@ -11,6 +11,7 @@ import com.project.ArtRari.user.User;
 import com.project.ArtRari.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ExhibitionService {
     private final ExhibitionRepository exhibitionRepository;
     private final TagRepository tagRepository;
@@ -89,6 +91,7 @@ public class ExhibitionService {
             throw new ArtrariException(HttpStatus.CONFLICT, e.getMessage());
         }
         Exhibition savedExhibition = exhibitionRepository.save(exhibition);
+        log.info("Створено виставку {}", savedExhibition.getId());
         return exhibitionMapper.toExhibitionResponse(savedExhibition);
     }
 
@@ -123,6 +126,7 @@ public class ExhibitionService {
             throw new ArtrariException(HttpStatus.CONFLICT, e.getMessage());
         }
         Exhibition savedExhibition = exhibitionRepository.save(exhibition);
+        log.info("Змінено виставку {}", savedExhibition.getId());
         return exhibitionMapper.toExhibitionResponse(savedExhibition);
     }
 
@@ -142,6 +146,7 @@ public class ExhibitionService {
         for (Artwork artwork : exhibition.getArtworks()) {
             artwork.setExhibition(null);
         }
+        log.info("Видалено виставку {}", exhibition.getId());
         exhibitionRepository.delete(exhibition);
     }
 

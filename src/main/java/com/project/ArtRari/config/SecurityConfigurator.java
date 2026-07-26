@@ -1,6 +1,7 @@
 package com.project.ArtRari.config;
 
 import com.project.ArtRari.security.TokenFilter;
+import org.apache.tika.Tika;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,5 +31,10 @@ public class SecurityConfigurator {
         FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(tokenFilter);
         registration.setEnabled(false);
         return registration;
+    }
+
+    @Bean
+    public Tika tika() {
+        return new Tika();
     }
 }
