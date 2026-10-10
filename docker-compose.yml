@@ -31,7 +31,6 @@ services:
       - db
       - redis
     environment:
-      SPRING_PROFILES_ACTIVE: docker
       DB_HOST: db
       CLOUDINARY_URL: ${CLOUDINARY_URL}
       REDIS_HOST: redis
